@@ -48,3 +48,5 @@ router.post("/new", [authenticate], async function (req, res, next) {
 		success: true,
 	});
 });
+
+module.exports = router;
