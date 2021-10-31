@@ -1,7 +1,8 @@
 const Web3 = require("web3");
 const web3 = new Web3("https://rinkeby.arbitrum.io/rpc");
+const oracleContractJson = require("./abis/OracleMultiSig.json");
 
-function txInputFromTxHashForNewMarket(txHash) {
+async function txInputFromTxHashForNewMarket(txHash) {
 	const tx = await web3.eth.getTransaction(txHash);
 	var input = "0x" + tx.input.slice(10);
 	input = web3.eth.abi.decodeParameters(
@@ -9,6 +10,16 @@ function txInputFromTxHashForNewMarket(txHash) {
 		input
 	);
 	return input;
+}
+
+async function getOracleMarketParams(address) {
+	try {
+		const oracleContract = web3.eth.Contract(oracleContractJson, address);
+		const params = oracleContract.methods.getMarketParams().call();
+		return params;
+	} catch (e) {
+		return undefined;
+	}
 }
 
 function verifySignature(msg, signature) {
@@ -29,4 +40,5 @@ module.exports = {
 	txInputFromTxHashForNewMarket,
 	verifySignature,
 	hashMsg,
+	getOracleMarketParams,
 };

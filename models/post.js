@@ -4,11 +4,11 @@ const PostSchema = new mongoose.Schema(
 	{
 		identifier: {
 			type: String,
-			require: true,
+			required: true,
 		},
 		url: {
 			type: String,
-			require: true,
+			required: true,
 		},
 		likes: {
 			type: [String],
@@ -24,11 +24,11 @@ const PostSchema = new mongoose.Schema(
 		},
 		creatorColdAddress: {
 			type: String,
-			require: true,
+			required: true,
 		},
 		moderatorAddress: {
 			type: String,
-			require: true,
+			required: true,
 		},
 	},
 	{
@@ -36,10 +36,10 @@ const PostSchema = new mongoose.Schema(
 	}
 );
 
-PostSchema.statics.findPostByFilter = function (filter) {
-	return this.findOne(filter);
+PostSchema.statics.findPostsByFilter = function (filter) {
+	return this.find(filter);
 };
 
-const Post = mongoose.model("Message", PostSchema);
+const Post = mongoose.model("Post", PostSchema);
 
 module.exports = Post;

@@ -14,16 +14,7 @@ async function authenticate(req, res, next) {
 
 	// get expected hot address of the user
 	var user = await models.User.findUserByColdAddress(coldAddress);
-	if (!user) {
-		// silently create a new user
-		user = new models.User({
-			coldAddress,
-			hotAddress,
-		});
-		await user.save();
-	}
-
-	if (user.hotAddress != hotAddress) {
+	if (user == undefined || user.hotAddress != hotAddress) {
 		next("Auth ERR!");
 	}
 

@@ -14,6 +14,20 @@ const UserSchema = new mongoose.Schema({
 		unique: true,
 		required: true,
 	},
+	timestamp: {
+		type: Date,
+		required: true,
+	},
+	moderators: {
+		type: [String],
+		default: [],
+	},
+	threshold: {
+		type: Number,
+		default: 0.5,
+		max: 1,
+		min: 0,
+	},
 });
 
 UserSchema.statics.findUserByColdAddress = function (address) {
