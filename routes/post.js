@@ -49,4 +49,13 @@ router.post("/new", [authenticate], async function (req, res, next) {
 	});
 });
 
+router.post("/find", async function (req, res) {
+	const { filter } = req.body;
+	const posts = await models.Post.findPostsByFilter(filter);
+	res.status(200).send({
+		success: true,
+		posts: posts,
+	});
+});
+
 module.exports = router;

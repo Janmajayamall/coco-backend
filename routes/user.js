@@ -38,8 +38,7 @@ router.post("/login", async function (req, res, next) {
 	});
 });
 
-// save config
-router.post("/profile", authenticate, async function (req, res) {
+router.post("/update", authenticate, async function (req, res) {
 	const { settings } = req.body;
 
 	await models.User.findUserAndUpdate(
@@ -49,6 +48,13 @@ router.post("/profile", authenticate, async function (req, res) {
 
 	res.status(200).send({
 		success: true,
+	});
+});
+
+router.get("/profile", authenticate, async function (req, res) {
+	res.status(200).send({
+		success: true,
+		user: req.user,
 	});
 });
 
