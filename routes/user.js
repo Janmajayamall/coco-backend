@@ -1,38 +1,48 @@
 const router = require("express").Router();
-const { verifySignature } = require("./../helpers");
+const { default: Web3 } = require("web3");
+const { verifySignature, checkAddress } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
 
 router.post("/login", async function (req, res, next) {
-	const { hotAddress, signature, timestamp } = req.body;
+	var { hotAddress, keySignature, accountNonce } = req.body;
 
-	const coldAddress = verifySignature(
+	// checksum hotAddress
+	if (!checkAddress(hotAddress)) {
+		next("Invalid hot address!");
+	}
+
+	var coldAddress = verifySignature(
 		JSON.stringify({
-			hotAddress: hotAddress,
-			timestamp: timestamp,
+			hotAddress,
+			accountNonce,
 		}),
-		signature
+		keySignature
 	);
 
-	timestamp = Date.parse(timestamp);
-
-	var user = models.User.findUserByColdAddress(coldAddress);
-
-	if (user == undefined || user.timestamp.getTime() <= timestamp.getTime()) {
+	var user = await models.User.findUserByFilter({ coldAddress });
+	console.log(user, " user is here");
+	if (user == undefined || user.accountNonce < accountNonce) {
 		// update user values
 		await models.User.findUserAndUpdate(
 			{
 				coldAddress: coldAddress,
 			},
 			{
-				hotAddress: hotAddress,
-				timestamp: timestamp,
+				hotAddress,
+				accountNonce,
 			}
 		);
+
+		res.status(200).send({
+			success: true,
+		});
 	} else {
 		next("Invalid login!");
 	}
+});
 
+router.post("/auth", authenticate, async function (req, res) {
 	res.status(200).send({
 		success: true,
 	});
@@ -51,10 +61,30 @@ router.post("/update", authenticate, async function (req, res) {
 	});
 });
 
-router.get("/profile", authenticate, async function (req, res) {
+router.post("/profile", authenticate, async function (req, res) {
 	res.status(200).send({
 		success: true,
-		user: req.user,
+		response: {
+			user: req.user,
+		},
+	});
+});
+
+router.post("/accountNonce", async function (req, res, next) {
+	var { coldAddress } = req.body;
+	if (!checkAddress(coldAddress)) {
+		next("Invalid cold address!");
+		return;
+	}
+	console.log(coldAddress, "this is here");
+	const user = await models.User.findUserByFilter({ coldAddress });
+	var accountNonce = -1;
+	if (user != undefined) {
+		accountNonce = user.accountNonce;
+	}
+	res.status(200).send({
+		success: true,
+		response: { accountNonce },
 	});
 });
 

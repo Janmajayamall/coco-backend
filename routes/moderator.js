@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { getOracleMarketParams } = require("./../helpers");
+const { getOracleMarketParams, checkAddress } = require("./../helpers");
 const { models } = require("./../models/index");
 const { param } = require("./user");
 
@@ -7,7 +7,7 @@ router.get("/", async function (req, res) {
 	const list = await models.Moderator.findAll();
 	res.status(200).send({
 		success: true,
-		res: list,
+		response: list,
 	});
 });
 
@@ -16,12 +16,16 @@ router.post("/find", async function (req, res) {
 	const moderator = await models.Moderator.findOneByAddress(address);
 	res.status(200).send({
 		success: true,
-		res: moderator,
+		response: moderator,
 	});
 });
 
 router.post("/add", async function (req, res, next) {
 	const { address } = req.body;
+	if (checkAddress(address)) {
+		next("Invalid address!");
+	}
+
 	const params = getOracleMarketParams(address);
 	if (params == undefined) {
 		next("Invalid moderator address");

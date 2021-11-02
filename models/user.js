@@ -14,8 +14,8 @@ const UserSchema = new mongoose.Schema({
 		unique: true,
 		required: true,
 	},
-	timestamp: {
-		type: Date,
+	accountNonce: {
+		type: Number,
 		required: true,
 	},
 	moderators: {
@@ -30,8 +30,8 @@ const UserSchema = new mongoose.Schema({
 	},
 });
 
-UserSchema.statics.findUserByColdAddress = function (address) {
-	return this.findOne({ coldAddress: address });
+UserSchema.statics.findUserByFilter = function (filter) {
+	return this.findOne(filter);
 };
 
 UserSchema.statics.findUserAndUpdate = function (filter, updates) {

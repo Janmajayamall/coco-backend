@@ -1,21 +1,35 @@
 const { verifySignature } = require("./../helpers");
+const { models } = require("./../models/index");
 
 async function authenticate(req, res, next) {
-	const signInfo = JSON.parse(req.body.signatures);
-	const msg = JSON.parse(req.body.msg);
+	const signInfo = req.body.signatures;
+	const msg = req.body.msg;
 	const keySignature = signInfo.keySignature;
 	const msgSignature = signInfo.msgSignature;
 
 	// get hot key of user
-	const hotAddress = verifySignature(msg, msgSignature);
+	const hotAddress = verifySignature(JSON.stringify(msg), msgSignature);
+	console.log(hotAddress, " derived hot address");
 
-	// get cold key of user
-	const coldAddress = verifySignature(hotAddress, keySignature);
+	// find user
+	var user = await models.User.findUserByFilter({ hotAddress });
+	console.log(user, " user retrieved for authentication");
 
-	// get expected hot address of the user
-	var user = await models.User.findUserByColdAddress(coldAddress);
-	if (user == undefined || user.hotAddress != hotAddress) {
-		next("Auth ERR!");
+	if (user == undefined) {
+		next("User does not exists!");
+	}
+
+	// verify keySignature
+	const coldAddress = verifySignature(
+		JSON.stringify({
+			hotAddress,
+			accountNonce: user.accountNonce,
+		}),
+		keySignature
+	);
+	console.log(coldAddress, " derived cold address");
+	if (user.coldAddress != coldAddress) {
+		next("Auth Err!");
 	}
 
 	req.user = user;

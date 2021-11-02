@@ -24,21 +24,31 @@ async function getOracleMarketParams(address) {
 
 function verifySignature(msg, signature) {
 	try {
-		const hash = web3.eth.accounts.hashMessage(msg);
-		const address = web3.eth.accounts.recover(hash, signature);
+		const address = web3.eth.accounts.recover(msg, signature);
 		return address;
 	} catch (e) {
 		return "";
 	}
 }
 
-function hashMsg(msg) {
+function hashMsgForSignature(msg) {
 	return web3.eth.accounts.hashMessage(msg);
+}
+
+function keccak256(msg) {
+	return web3.utils.keccak256(msg);
+}
+
+function checkAddress(address) {
+	console.log(address);
+	return web3.utils.checkAddressChecksum(address);
 }
 
 module.exports = {
 	txInputFromTxHashForNewMarket,
 	verifySignature,
-	hashMsg,
+	hashMsgForSignature,
 	getOracleMarketParams,
+	checkAddress,
+	keccak256,
 };
