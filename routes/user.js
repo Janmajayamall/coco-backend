@@ -1,5 +1,4 @@
 const router = require("express").Router();
-const { default: Web3 } = require("web3");
 const { verifySignature, checkAddress } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
@@ -21,7 +20,7 @@ router.post("/login", async function (req, res, next) {
 	);
 
 	var user = await models.User.findUserByFilter({ coldAddress });
-	console.log(user, " user is here");
+
 	if (user == undefined || user.accountNonce < accountNonce) {
 		// update user values
 		await models.User.findUserAndUpdate(
@@ -76,7 +75,7 @@ router.post("/accountNonce", async function (req, res, next) {
 		next("Invalid cold address!");
 		return;
 	}
-	console.log(coldAddress, "this is here");
+
 	const user = await models.User.findUserByFilter({ coldAddress });
 	var accountNonce = -1;
 	if (user != undefined) {

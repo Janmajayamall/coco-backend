@@ -4,9 +4,10 @@ const oracleContractJson = require("./abis/OracleMultiSig.json");
 
 async function txInputFromTxHashForNewMarket(txHash) {
 	const tx = await web3.eth.getTransaction(txHash);
+
 	var input = "0x" + tx.input.slice(10);
 	input = web3.eth.abi.decodeParameters(
-		["address", "address", "bytes32", "uint256"],
+		["address", "address", "bytes32", "uint256", "uint256", "uint256"],
 		input
 	);
 	return input;
@@ -14,9 +15,25 @@ async function txInputFromTxHashForNewMarket(txHash) {
 
 async function getOracleMarketParams(address) {
 	try {
-		const oracleContract = web3.eth.Contract(oracleContractJson, address);
-		const params = oracleContract.methods.getMarketParams().call();
+		const oracleContract = new web3.eth.Contract(
+			oracleContractJson,
+			address
+		);
+		const params = await oracleContract.methods.getMarketParams().call();
 		return params;
+	} catch (e) {
+		return undefined;
+	}
+}
+
+async function getOracleDelegate(address) {
+	try {
+		const oracleContract = new web3.eth.Contract(
+			oracleContractJson,
+			address
+		);
+		const delegate = await oracleContract.methods.delegate().call();
+		return delegate;
 	} catch (e) {
 		return undefined;
 	}
@@ -40,7 +57,6 @@ function keccak256(msg) {
 }
 
 function checkAddress(address) {
-	console.log(address);
 	return web3.utils.checkAddressChecksum(address);
 }
 
@@ -51,4 +67,5 @@ module.exports = {
 	getOracleMarketParams,
 	checkAddress,
 	keccak256,
+	getOracleDelegate,
 };

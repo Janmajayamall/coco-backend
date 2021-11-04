@@ -6,20 +6,8 @@ const PostSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		url: {
+		imageUrl: {
 			type: String,
-			required: true,
-		},
-		likes: {
-			type: [String],
-			default: [],
-		},
-		dislikes: {
-			type: [String],
-			default: [],
-		},
-		category: {
-			type: Number,
 			required: true,
 		},
 		creatorColdAddress: {

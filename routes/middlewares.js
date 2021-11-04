@@ -9,14 +9,13 @@ async function authenticate(req, res, next) {
 
 	// get hot key of user
 	const hotAddress = verifySignature(JSON.stringify(msg), msgSignature);
-	console.log(hotAddress, " derived hot address");
 
 	// find user
 	var user = await models.User.findUserByFilter({ hotAddress });
-	console.log(user, " user retrieved for authentication");
 
 	if (user == undefined) {
 		next("User does not exists!");
+		return;
 	}
 
 	// verify keySignature
@@ -27,12 +26,14 @@ async function authenticate(req, res, next) {
 		}),
 		keySignature
 	);
-	console.log(coldAddress, " derived cold address");
+
 	if (user.coldAddress != coldAddress) {
 		next("Auth Err!");
+		return;
 	}
 
 	req.user = user;
+	req.body = msg;
 	next();
 }
 

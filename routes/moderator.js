@@ -1,7 +1,11 @@
 const router = require("express").Router();
-const { getOracleMarketParams, checkAddress } = require("./../helpers");
+const {
+	getOracleMarketParams,
+	checkAddress,
+	getOracleDelegate,
+} = require("./../helpers");
 const { models } = require("./../models/index");
-const { param } = require("./user");
+const { authenticate } = require("./middlewares");
 
 router.get("/", async function (req, res) {
 	const list = await models.Moderator.findAll();
@@ -20,13 +24,26 @@ router.post("/find", async function (req, res) {
 	});
 });
 
-router.post("/add", async function (req, res, next) {
-	const { address } = req.body;
-	if (checkAddress(address)) {
+router.post("/update", [authenticate], async function (req, res, next) {
+	const { address, details } = req.body;
+	if (!checkAddress(address)) {
 		next("Invalid address!");
+		return;
 	}
 
-	const params = getOracleMarketParams(address);
+	const delegate = await getOracleDelegate(address);
+	if (delegate == undefined || req.user.coldAddress != delegate) {
+		next("Invalid delegate");
+		return;
+	}
+
+	if (typeof details != typeof {}) {
+		next("Details should be Object type");
+		return;
+	}
+
+	const params = await getOracleMarketParams(address);
+
 	if (params == undefined) {
 		next("Invalid moderator address");
 	} else {
@@ -41,6 +58,9 @@ router.post("/add", async function (req, res, next) {
 				expireBufferBlocks: Number(params[5]),
 				donBufferBlocks: Number(params[6]),
 				resolutionBufferBlocks: Number(params[7]),
+
+				// details
+				...details,
 			}
 		);
 		res.status(200).send({

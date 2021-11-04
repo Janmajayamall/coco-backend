@@ -14,8 +14,13 @@ router.post("/new", [authenticate], async function (req, res, next) {
 		return;
 	}
 
-	const { txHash, imageUrl, category } = req.body;
-	const txInput = txInputFromTxHashForNewMarket(txHash);
+	const { txHash, imageUrl } = req.body;
+	const txInput = await txInputFromTxHashForNewMarket(txHash);
+
+	if (txInput == undefined) {
+		next("Invalid tx hash");
+		return;
+	}
 
 	// marketCreator should be user
 	if (txInput[0] != user.coldAddress) {
@@ -24,19 +29,20 @@ router.post("/new", [authenticate], async function (req, res, next) {
 	}
 
 	// check whether post already exists
-	const postExists = await models.Post.findPostByFilter({
+	const postsExists = await models.Post.findPostsByFilter({
 		identifier: txInput[2],
 		creatorColdAddress: txInput[0],
 		moderatorAddress: txInput[1],
 	});
-	if (postExists) {
+
+	if (postsExists.length != 0) {
 		next("Post exists");
 		return;
 	}
 
-	// check whether identifier is correct
-	if (txInput[2] != keccak256(imageUrl + String(category))) {
-		next("Incorrect imageUrl or category values supplied");
+	if (txInput[2] != keccak256(imageUrl)) {
+		// check whether identifier is correct
+		next("Incorrect imageUrl value supplied");
 		return;
 	}
 
@@ -45,6 +51,7 @@ router.post("/new", [authenticate], async function (req, res, next) {
 		identifier: txInput[2],
 		creatorColdAddress: txInput[0],
 		moderatorAddress: txInput[1],
+		imageUrl,
 	});
 	await post.save();
 
