@@ -19,6 +19,7 @@ app.use(json());
 app.use("/user", routes.user);
 app.use("/post", routes.post);
 app.use("/moderator", routes.moderator);
+app.user("/follow", routes.follow);
 
 async function main() {
 	await connectDb();

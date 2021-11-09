@@ -9,6 +9,7 @@ router.post("/login", async function (req, res, next) {
 	// checksum hotAddress
 	if (!checkAddress(hotAddress)) {
 		next("Invalid hot address!");
+		return;
 	}
 
 	var coldAddress = verifySignature(

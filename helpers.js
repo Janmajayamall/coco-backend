@@ -32,7 +32,7 @@ async function getOracleDelegate(address) {
 			oracleContractJson,
 			address
 		);
-		const delegate = await oracleContract.methods.delegate().call();
+		const delegate = await oracleContract.methods.getDelegate().call();
 		return delegate;
 	} catch (e) {
 		return undefined;
