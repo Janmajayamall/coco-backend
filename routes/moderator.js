@@ -20,7 +20,7 @@ router.post("/find", async function (req, res) {
 	const moderator = await models.Moderator.findOneByAddress(address);
 	res.status(200).send({
 		success: true,
-		response: moderator,
+		response: { moderator },
 	});
 });
 
@@ -32,6 +32,7 @@ router.post("/update", [authenticate], async function (req, res, next) {
 	}
 
 	const delegate = await getOracleDelegate(address);
+	console.log(address, req.user.coldAddress, details, delegate);
 	if (delegate == undefined || req.user.coldAddress != delegate) {
 		next("Invalid delegate");
 		return;
@@ -47,7 +48,7 @@ router.post("/update", [authenticate], async function (req, res, next) {
 	if (params == undefined) {
 		next("Invalid moderator address");
 	} else {
-		await models.Moderator.findModeratorAndUpdate(
+		const moderator = await models.Moderator.findModeratorAndUpdate(
 			{ address: address },
 			{
 				tokeC: params[0],
@@ -63,8 +64,10 @@ router.post("/update", [authenticate], async function (req, res, next) {
 				...details,
 			}
 		);
+		console.log("Updated moderator ", moderator);
 		res.status(200).send({
 			success: true,
+			response: { moderator },
 		});
 	}
 });

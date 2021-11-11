@@ -24,7 +24,7 @@ router.post("/login", async function (req, res, next) {
 
 	if (user == undefined || user.accountNonce < accountNonce) {
 		// update user values
-		await models.User.findUserAndUpdate(
+		user = await models.User.findUserAndUpdate(
 			{
 				coldAddress: coldAddress,
 			},
@@ -33,12 +33,14 @@ router.post("/login", async function (req, res, next) {
 				accountNonce,
 			}
 		);
-
+		console.log(user);
 		res.status(200).send({
 			success: true,
+			response: { user },
 		});
 	} else {
 		next("Invalid login!");
+		return;
 	}
 });
 

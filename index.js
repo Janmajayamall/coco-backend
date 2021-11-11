@@ -6,7 +6,6 @@ const { models } = require("./models");
 const routes = require("./routes");
 const Web3 = require("web3");
 const web3 = new Web3("https://rinkeby.arbitrum.io/rpc");
-const oracleContractJson = require("./abis/OracleMultiSig.json");
 
 require("dotenv").config({ path: __dirname + "/.env" });
 const port = 5000;
@@ -19,7 +18,7 @@ app.use(json());
 app.use("/user", routes.user);
 app.use("/post", routes.post);
 app.use("/moderator", routes.moderator);
-app.user("/follow", routes.follow);
+app.use("/follow", routes.follow);
 
 async function main() {
 	await connectDb();

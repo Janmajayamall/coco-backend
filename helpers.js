@@ -1,6 +1,6 @@
 const Web3 = require("web3");
 const web3 = new Web3("https://rinkeby.arbitrum.io/rpc");
-const oracleContractJson = require("./abis/OracleMultiSig.json");
+const oracleContractJson = require("./abis/Oracle.json");
 
 async function txInputFromTxHashForNewMarket(txHash) {
 	const tx = await web3.eth.getTransaction(txHash);
@@ -35,6 +35,7 @@ async function getOracleDelegate(address) {
 		const delegate = await oracleContract.methods.getDelegate().call();
 		return delegate;
 	} catch (e) {
+		console.log(e, ",l,l");
 		return undefined;
 	}
 }
