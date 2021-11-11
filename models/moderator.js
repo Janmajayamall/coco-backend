@@ -27,14 +27,8 @@ const ModeratorSchema = new mongoose.Schema({
 	},
 });
 
-ModeratorSchema.statics.findAll = function () {
-	return this.find({});
-};
-
-ModeratorSchema.statics.findOneByAddress = function (address) {
-	return this.findOne({
-		address: address,
-	});
+ModeratorSchema.statics.findByFilter = function (filter) {
+	return this.find(filter);
 };
 
 ModeratorSchema.statics.findModeratorAndUpdate = function (filter, updates) {

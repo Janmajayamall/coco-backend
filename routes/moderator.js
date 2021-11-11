@@ -7,20 +7,12 @@ const {
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
 
-router.get("/", async function (req, res) {
-	const list = await models.Moderator.findAll();
-	res.status(200).send({
-		success: true,
-		response: list,
-	});
-});
-
 router.post("/find", async function (req, res) {
-	const { address } = req.body;
-	const moderator = await models.Moderator.findOneByAddress(address);
+	const { filter } = req.body;
+	const moderators = await models.Moderator.findByFilter(filter);
 	res.status(200).send({
 		success: true,
-		response: { moderator },
+		response: { moderators },
 	});
 });
 
