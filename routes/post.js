@@ -16,10 +16,10 @@ router.post("/new", [authenticate], async function (req, res, next) {
 
 	const { oracleAddress, eventIdentifierStr } = req.body;
 
-	const marketExists = checkMarketExistsInOracle(
+	const marketExists = await checkMarketExistsInOracle(
 		user.coldAddress,
 		oracleAddress,
-		eventIdentifierStr
+		keccak256(eventIdentifierStr)
 	);
 
 	if (!marketExists) {
@@ -29,7 +29,7 @@ router.post("/new", [authenticate], async function (req, res, next) {
 
 	const post = await models.Post.findPostAndUpdate(
 		{
-			creatorAddress: user.coldAddress,
+			creatorColdAddress: user.coldAddress,
 			oracleAddress,
 			eventIdentifierStr,
 		},

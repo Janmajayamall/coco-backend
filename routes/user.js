@@ -33,7 +33,7 @@ router.post("/login", async function (req, res, next) {
 				accountNonce,
 			}
 		);
-		console.log(user);
+
 		res.status(200).send({
 			success: true,
 			response: { user },

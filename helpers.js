@@ -2,35 +2,32 @@ const Web3 = require("web3");
 const web3 = new Web3("https://rinkeby.arbitrum.io/rpc");
 const oracleContractJson = require("./abis/Oracle.json");
 
-const ORACLE_FACTORY_ADDRESS =
-	"d0xa7db16a8b638607272eAdc1868A8fB28636e1Db2nwaiodna";
+const ORACLE_FACTORY_ADDRESS = "0x35858C861564F072724658458C1c9C22F5506c36";
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 async function strToHash(str) {
 	return web3.utils.asciiToHex(str);
 }
 
-async function marketIdentifierFrom(
-	creatorAddress,
-	oracleAddress,
-	eventIdentifierStr
-) {
+function marketIdentifierFrom(creatorAddress, eventIdentifier, oracleAddress) {
 	const encoding = web3.eth.abi.encodeParameters(
-		["address", "address", "bytes32"],
-		[creatorAddress, oracleAddress, keccak256(eventIdentifierStr)]
+		["address", "bytes32", "address"],
+		[creatorAddress, eventIdentifier, oracleAddress]
 	);
-	return encoding;
+	return keccak256(encoding);
 }
 
 async function checkMarketExistsInOracle(
 	creatorAddress,
 	oracleAddress,
-	eventIdentifierStr
+	eventIdentifier
 ) {
 	const marketIdentifier = marketIdentifierFrom(
 		creatorAddress,
-		oracleAddress,
-		eventIdentifierStr
+		eventIdentifier,
+		oracleAddress
 	);
+
 	try {
 		const contract = new web3.eth.Contract(
 			oracleContractJson,
@@ -40,11 +37,14 @@ async function checkMarketExistsInOracle(
 		const creator = await contract.methods
 			.creators(marketIdentifier)
 			.call();
-		if (!creator) {
+
+		if (!creator || creator == ZERO_ADDRESS) {
 			throw new Error("Market does not exist");
 		}
+		return true;
 	} catch (e) {
 		console.log(`Error - ${e}`);
+		return false;
 	}
 }
 
@@ -73,7 +73,7 @@ async function getManagerAddress(oracleAddress) {
 		);
 
 		const manager = await contract.methods.manager().call();
-		if (!manager) {
+		if (!manager || manager == ZERO_ADDRESS) {
 			throw new Error("Manager does not exist");
 		}
 
@@ -137,7 +137,6 @@ async function getOracleDelegate(address) {
 		const delegate = await oracleContract.methods.getDelegate().call();
 		return delegate;
 	} catch (e) {
-		console.log(e, ",l,l");
 		return undefined;
 	}
 }
