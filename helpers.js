@@ -2,6 +2,88 @@ const Web3 = require("web3");
 const web3 = new Web3("https://rinkeby.arbitrum.io/rpc");
 const oracleContractJson = require("./abis/Oracle.json");
 
+const ORACLE_FACTORY_ADDRESS =
+	"d0xa7db16a8b638607272eAdc1868A8fB28636e1Db2nwaiodna";
+
+async function strToHash(str) {
+	return web3.utils.asciiToHex(str);
+}
+
+async function marketIdentifierFrom(
+	creatorAddress,
+	oracleAddress,
+	eventIdentifierStr
+) {
+	const encoding = web3.eth.abi.encodeParameters(
+		["address", "address", "bytes32"],
+		[creatorAddress, oracleAddress, keccak256(eventIdentifierStr)]
+	);
+	return encoding;
+}
+
+async function checkMarketExistsInOracle(
+	creatorAddress,
+	oracleAddress,
+	eventIdentifierStr
+) {
+	const marketIdentifier = marketIdentifierFrom(
+		creatorAddress,
+		oracleAddress,
+		eventIdentifierStr
+	);
+	try {
+		const contract = new web3.eth.Contract(
+			oracleContractJson,
+			oracleAddress
+		);
+
+		const creator = await contract.methods
+			.creators(marketIdentifier)
+			.call();
+		if (!creator) {
+			throw new Error("Market does not exist");
+		}
+	} catch (e) {
+		console.log(`Error - ${e}`);
+	}
+}
+
+async function getOracleAddress(txHash) {
+	try {
+		const receipt = await web3.eth.getTransactionReceipt(txHash);
+
+		// check to is OracleFactory
+		if (receipt.to != ORACLE_FACTORY_ADDRESS) {
+			throw new Error("Invalid tx");
+		}
+
+		const oracleAddress = receipt.logs[0].topics[1];
+		return web3.utils.toChecksumAddress(`0x${oracleAddress.slice(26)}`);
+	} catch (e) {
+		console.log(`Error - ${e}`);
+		return;
+	}
+}
+
+async function getManagerAddress(oracleAddress) {
+	try {
+		const contract = new web3.eth.Contract(
+			oracleContractJson,
+			oracleAddress
+		);
+
+		const manager = await contract.methods.manager().call();
+		if (!manager) {
+			throw new Error("Manager does not exist");
+		}
+
+		return web3.utils.toChecksumAddress(manager);
+	} catch (e) {
+		console.log(`Error - ${e}`);
+		return;
+	}
+}
+
 async function txInputFromTxHashForNewMarket(txHash) {
 	try {
 		const tx = await web3.eth.getTransaction(txHash);
@@ -89,4 +171,8 @@ module.exports = {
 	checkAddress,
 	keccak256,
 	getOracleDelegate,
+
+	checkMarketExistsInOracle,
+	getOracleAddress,
+	getManagerAddress,
 };

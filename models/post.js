@@ -2,11 +2,7 @@ const mongoose = require("mongoose");
 
 const PostSchema = new mongoose.Schema(
 	{
-		identifier: {
-			type: String,
-			required: true,
-		},
-		imageUrl: {
+		eventIdentifierStr: {
 			type: String,
 			required: true,
 		},
@@ -14,7 +10,7 @@ const PostSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		moderatorAddress: {
+		oracleAddress: {
 			type: String,
 			required: true,
 		},
@@ -26,6 +22,13 @@ const PostSchema = new mongoose.Schema(
 
 PostSchema.statics.findPostsByFilter = function (filter) {
 	return this.find(filter);
+};
+
+PostSchema.statics.findPostAndUpdate = function (filter, updates) {
+	return this.findOneAndUpdate(filter, updates, {
+		new: true,
+		upsert: true,
+	});
 };
 
 const Post = mongoose.model("Post", PostSchema);

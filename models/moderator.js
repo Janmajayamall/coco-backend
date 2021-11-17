@@ -1,27 +1,10 @@
 const mongoose = require("mongoose");
 
 const ModeratorSchema = new mongoose.Schema({
-	address: {
+	oracleAddress: {
 		type: String,
 		required: true,
 	},
-	tokeC: {
-		type: String,
-		required: true,
-	},
-	isActive: {
-		type: Boolean,
-		required: true,
-	},
-	feeNumerator: {
-		type: Number,
-		required: true,
-	},
-	feeDenominator: { type: Number, required: true },
-	donEscalationLimit: { type: Number, required: true },
-	expireBufferBlocks: { type: Number, required: true },
-	donBufferBlocks: { type: Number, required: true },
-	resolutionBufferBlocks: { type: Number, required: true },
 	name: {
 		type: String,
 	},

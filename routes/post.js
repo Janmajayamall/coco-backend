@@ -1,8 +1,8 @@
 const router = require("express").Router();
 const {
-	verifySignature,
 	txInputFromTxHashForNewMarket,
 	keccak256,
+	checkMarketExistsInOracle,
 } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
@@ -14,49 +14,33 @@ router.post("/new", [authenticate], async function (req, res, next) {
 		return;
 	}
 
-	const { txHash, imageUrl } = req.body;
-	const txInput = await txInputFromTxHashForNewMarket(txHash);
+	const { oracleAddress, eventIdentifierStr } = req.body;
 
-	if (txInput == undefined) {
-		next("Invalid tx hash");
+	const marketExists = checkMarketExistsInOracle(
+		user.coldAddress,
+		oracleAddress,
+		eventIdentifierStr
+	);
+
+	if (!marketExists) {
+		next("Market does not exists");
 		return;
 	}
 
-	// marketCreator should be user
-	if (txInput[0] != user.coldAddress) {
-		next("Invalid user for market creation");
-		return;
-	}
-
-	// check whether post already exists
-	const postsExists = await models.Post.findPostsByFilter({
-		identifier: txInput[2],
-		creatorColdAddress: txInput[0],
-		moderatorAddress: txInput[1],
-	});
-
-	if (postsExists.length != 0) {
-		next("Post exists");
-		return;
-	}
-
-	if (txInput[2] != keccak256(imageUrl)) {
-		// check whether identifier is correct
-		next("Incorrect imageUrl value supplied");
-		return;
-	}
-
-	// new post
-	const post = new models.Post({
-		identifier: txInput[2],
-		creatorColdAddress: txInput[0],
-		moderatorAddress: txInput[1],
-		imageUrl,
-	});
-	await post.save();
+	const post = await models.Post.findPostAndUpdate(
+		{
+			creatorAddress: user.coldAddress,
+			oracleAddress,
+			eventIdentifierStr,
+		},
+		{}
+	);
 
 	res.status(200).send({
 		success: true,
+		response: {
+			post,
+		},
 	});
 });
 
