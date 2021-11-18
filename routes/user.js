@@ -1,16 +1,15 @@
 const router = require("express").Router();
-const { verifySignature, checkAddress } = require("./../helpers");
+const {
+	verifySignature,
+
+	toCheckSumAddress,
+} = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
 
 router.post("/login", async function (req, res, next) {
 	var { hotAddress, keySignature, accountNonce } = req.body;
-
-	// checksum hotAddress
-	if (!checkAddress(hotAddress)) {
-		next("Invalid hot address!");
-		return;
-	}
+	hotAddress = toCheckSumAddress(hotAddress);
 
 	var coldAddress = verifySignature(
 		JSON.stringify({
@@ -74,10 +73,7 @@ router.post("/profile", authenticate, async function (req, res) {
 
 router.post("/accountNonce", async function (req, res, next) {
 	var { coldAddress } = req.body;
-	if (!checkAddress(coldAddress)) {
-		next("Invalid cold address!");
-		return;
-	}
+	coldAddress = toCheckSumAddress(coldAddress);
 
 	const user = await models.User.findUserByFilter({ coldAddress });
 	var accountNonce = -1;

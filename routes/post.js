@@ -3,6 +3,8 @@ const {
 	txInputFromTxHashForNewMarket,
 	keccak256,
 	checkMarketExistsInOracle,
+	marketIdentifierFrom,
+	toCheckSumAddress,
 } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
@@ -14,7 +16,8 @@ router.post("/new", [authenticate], async function (req, res, next) {
 		return;
 	}
 
-	const { oracleAddress, eventIdentifierStr } = req.body;
+	var { oracleAddress, eventIdentifierStr } = req.body;
+	oracleAddress = toCheckSumAddress(oracleAddress);
 
 	const marketExists = await checkMarketExistsInOracle(
 		user.coldAddress,
@@ -32,6 +35,11 @@ router.post("/new", [authenticate], async function (req, res, next) {
 			creatorColdAddress: user.coldAddress,
 			oracleAddress,
 			eventIdentifierStr,
+			marketIdentifier: marketIdentifierFrom(
+				user.coldAddress,
+				keccak256(eventIdentifierStr),
+				oracleAddress
+			),
 		},
 		{}
 	);

@@ -1,5 +1,5 @@
- const router = require("express").Router();
-const { checkAddress } = require("./../helpers");
+const router = require("express").Router();
+const { toCheckSumAddress } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
 
@@ -27,11 +27,8 @@ router.post("/add", [authenticate], async function (req, res, next) {
 		return;
 	}
 
-	const { moderatorAddress } = req.body;
-	if (!checkAddress(moderatorAddress)) {
-		next("Invalid moderator address");
-		return;
-	}
+	var { moderatorAddress } = req.body;
+	moderatorAddress = toCheckSumAddress(moderatorAddress);
 
 	const moderatorExists = await models.Follow.findOneByAddress(
 		moderatorAddress
@@ -59,11 +56,8 @@ router.post("/remove", [authenticate], async function (req, res, next) {
 		return;
 	}
 
-	const { moderatorAddress } = req.body;
-	if (!checkAddress(moderatorAddress)) {
-		next("Invalid moderator address");
-		return;
-	}
+	var { moderatorAddress } = req.body;
+	moderatorAddress = toCheckSumAddress(moderatorAddress);
 
 	// remove follow
 	await models.Follow.deleteFollowRelation(

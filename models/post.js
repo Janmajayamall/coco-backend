@@ -14,6 +14,10 @@ const PostSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
+		marketIdentifier: {
+			type: String,
+			required: true,
+		},
 	},
 	{
 		timestamps: {},

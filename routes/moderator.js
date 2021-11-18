@@ -5,9 +5,44 @@ const {
 	getOracleDelegate,
 	getOracleAddress,
 	getManagerAddress,
+	toCheckSumAddress,
 } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
+
+/* 
+Get Routes
+ */
+router.get("/popular", async function (req, res) {
+	/* 
+	Find popular moderators.
+	Right now the one with most post is 
+	considered the most popular
+	 */
+	const oracleAddresses = await models.Post.aggregate([
+		{
+			$sortByCount: "$oracleAddress",
+		},
+		{
+			$limit: 10,
+		},
+	]);
+	console.log(oracleAddresses, " oracleAddresses");
+	const moderators = await models.Moderator.findByFilter({
+		oracleAddress: {
+			$in: oracleAddresses,
+		},
+	});
+
+	res.status(200).send({
+		success: true,
+		response: { moderators },
+	});
+});
+
+/* 
+Post routes
+ */
 
 router.post("/find", async function (req, res) {
 	const { filter } = req.body;
@@ -19,11 +54,8 @@ router.post("/find", async function (req, res) {
 });
 
 router.post("/update", [authenticate], async function (req, res, next) {
-	const { oracleAddress, details } = req.body;
-	if (!checkAddress(oracleAddress)) {
-		next("Invalid address");
-		return;
-	}
+	var { oracleAddress, details } = req.body;
+	oracleAddress = toCheckSumAddress(oracleAddress);
 
 	// check caller is manager
 	const managerAddress = await getManagerAddress(oracleAddress);

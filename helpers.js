@@ -162,6 +162,10 @@ function checkAddress(address) {
 	return web3.utils.checkAddressChecksum(address);
 }
 
+function toCheckSumAddress(address) {
+	return web3.utils.toChecksumAddress(address);
+}
+
 module.exports = {
 	txInputFromTxHashForNewMarket,
 	verifySignature,
@@ -174,4 +178,6 @@ module.exports = {
 	checkMarketExistsInOracle,
 	getOracleAddress,
 	getManagerAddress,
+	marketIdentifierFrom,
+	toCheckSumAddress,
 };
