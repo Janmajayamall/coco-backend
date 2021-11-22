@@ -13,21 +13,29 @@ const { authenticate } = require("./middlewares");
 /* 
 Get Routes
  */
-router.get("/popular", async function (req, res) {
-	/* 
-	Find popular moderators.
-	Right now the one with most post is 
-	considered the most popular
-	 */
+
+/**
+ * Returns a list of popular groups that are not
+ * part of the ignoreList.
+ */
+router.post("/popular", async function (req, res) {
+	const { ignoreList } = req.body;
+	if (!Array.isArray(ignoreList)) {
+		next("ignoreList should be array");
+		return;
+	}
 	const oracleAddresses = await models.Post.aggregate([
 		{
-			$sortByCount: "$oracleAddress",
+			$match: { oracleAddress: { $nin: ignoreList } },
 		},
 		{
-			$limit: 10,
+			$group: { _id: "$oracleAddress", count: { $sum: 1 } },
+		},
+		{ $sort: { count: -1 } },
+		{
+			$limit: 20,
 		},
 	]);
-	console.log(oracleAddresses, " oracleAddresses");
 	const moderators = await models.Moderator.findByFilter({
 		oracleAddress: {
 			$in: oracleAddresses,
@@ -44,8 +52,13 @@ router.get("/popular", async function (req, res) {
 Post routes
  */
 
+/**
+ * Find moderatos using a filter
+ * @notice addresses stored in db are check
+ */
 router.post("/find", async function (req, res) {
 	const { filter } = req.body;
+	console.log(filter, " filter is here");
 	const moderators = await models.Moderator.findByFilter(filter);
 	res.status(200).send({
 		success: true,

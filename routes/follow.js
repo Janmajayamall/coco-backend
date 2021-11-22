@@ -10,13 +10,13 @@ router.post("/all", [authenticate], async function (req, res, next) {
 		return;
 	}
 
-	const relations = await models.Follow.findAllByFilter({
-		userAddress: user.userColdAddress,
+	const relations = await models.Follow.findByFilter({
+		userAddress: user.coldAddress,
 	});
 
 	res.status(200).send({
 		success: true,
-		response: relations,
+		response: { relations },
 	});
 });
 
@@ -30,10 +30,11 @@ router.post("/add", [authenticate], async function (req, res, next) {
 	var { moderatorAddress } = req.body;
 	moderatorAddress = toCheckSumAddress(moderatorAddress);
 
-	const moderatorExists = await models.Follow.findOneByAddress(
-		moderatorAddress
-	);
-	if (!moderatorExists) {
+	const moderatorExists = await models.Moderator.findByFilter({
+		oracleAddress: moderatorAddress,
+	});
+
+	if (!moderatorExists || moderatorExists.length == 0) {
 		next("Moderator does not exists");
 		return;
 	}

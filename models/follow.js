@@ -16,7 +16,7 @@ const FollowSchema = new mongoose.Schema(
 	}
 );
 
-FollowSchema.statics.findAllByFilter = function (filter) {
+FollowSchema.statics.findByFilter = function (filter) {
 	return this.find(filter);
 };
 
@@ -29,7 +29,7 @@ FollowSchema.statics.updateFollowRelation = function (
 			userAddress,
 			moderatorAddress,
 		},
-		{ userAddress, moderatorAddress },
+		{},
 		{
 			new: true,
 			upsert: true,

@@ -63,4 +63,47 @@ router.post("/find", async function (req, res) {
 	});
 });
 
+router.post("/newPostTrial", [authenticate], async function (req, res, next) {
+	const user = req.user;
+	if (!user) {
+		next("User not present");
+		return;
+	}
+
+	var { oracleAddress, eventIdentifierStr } = req.body;
+	oracleAddress = toCheckSumAddress(oracleAddress);
+
+	const marketExists = await checkMarketExistsInOracle(
+		user.coldAddress,
+		oracleAddress,
+		eventIdentifierStr
+	);
+
+	if (!marketExists) {
+		next("Market does not exists");
+		return;
+	}
+
+	const post = await models.Post.findPostAndUpdate(
+		{
+			creatorColdAddress: user.coldAddress,
+			oracleAddress,
+			eventIdentifierStr,
+			marketIdentifier: marketIdentifierFrom(
+				user.coldAddress,
+				eventIdentifierStr,
+				oracleAddress
+			),
+		},
+		{}
+	);
+
+	res.status(200).send({
+		success: true,
+		response: {
+			post,
+		},
+	});
+});
+
 module.exports = router;
