@@ -12,10 +12,7 @@ router.post("/login", async function (req, res, next) {
 	hotAddress = toCheckSumAddress(hotAddress);
 
 	var coldAddress = verifySignature(
-		JSON.stringify({
-			hotAddress,
-			accountNonce,
-		}),
+		`Sign your hot wallet with address ${hotAddress} and nonce ${accountNonce} to login Mimi`,
 		keySignature
 	);
 

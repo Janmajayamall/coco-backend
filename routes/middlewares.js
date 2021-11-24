@@ -20,10 +20,7 @@ async function authenticate(req, res, next) {
 
 	// verify keySignature
 	const coldAddress = verifySignature(
-		JSON.stringify({
-			hotAddress,
-			accountNonce: user.accountNonce,
-		}),
+		`Sign your hot wallet with address ${hotAddress} and nonce ${user.accountNonce} to login Mimi`,
 		keySignature
 	);
 
