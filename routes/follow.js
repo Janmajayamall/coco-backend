@@ -1,5 +1,4 @@
 const router = require("express").Router();
-const { toCheckSumAddress } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
 
@@ -28,7 +27,7 @@ router.post("/add", [authenticate], async function (req, res, next) {
 	}
 
 	var { moderatorAddress } = req.body;
-	moderatorAddress = toCheckSumAddress(moderatorAddress);
+	moderatorAddress = moderatorAddress.toLowerCase();
 
 	const moderatorExists = await models.Moderator.findByFilter({
 		oracleAddress: moderatorAddress,
@@ -58,8 +57,7 @@ router.post("/remove", [authenticate], async function (req, res, next) {
 	}
 
 	var { moderatorAddress } = req.body;
-	moderatorAddress = toCheckSumAddress(moderatorAddress);
-
+	
 	// remove follow
 	await models.Follow.deleteFollowRelation(
 		user.coldAddress,

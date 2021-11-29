@@ -1,4 +1,4 @@
-const { verifySignature } = require("./../helpers");
+const { verifySignature, toCheckSumAddress } = require("./../helpers");
 const { models } = require("./../models/index");
 
 async function authenticate(req, res, next) {
@@ -8,10 +8,13 @@ async function authenticate(req, res, next) {
 	const msgSignature = signInfo.msgSignature;
 
 	// get hot key of user
-	const hotAddress = verifySignature(JSON.stringify(msg), msgSignature);
+	let hotAddress = verifySignature(JSON.stringify(msg), msgSignature);
+	hotAddress = hotAddress.toLowerCase();
 
 	// find user
-	var user = await models.User.findUserByFilter({ hotAddress });
+	var user = await models.User.findUserByFilter({
+		hotAddress: hotAddress,
+	});
 
 	if (user == undefined) {
 		next("User does not exists!");
@@ -19,10 +22,13 @@ async function authenticate(req, res, next) {
 	}
 
 	// verify keySignature
-	const coldAddress = verifySignature(
-		`Sign your hot wallet with address ${hotAddress} and nonce ${user.accountNonce} to login Mimi`,
+	let coldAddress = verifySignature(
+		`Sign your hot wallet with address ${toCheckSumAddress(
+			hotAddress
+		)} and nonce ${user.accountNonce} to login Mimi`,
 		keySignature
 	);
+	coldAddress = coldAddress.toLowerCase();
 
 	if (user.coldAddress != coldAddress) {
 		next("Auth Err!");

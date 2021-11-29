@@ -29,8 +29,7 @@ async function main() {
 
 main().catch((err) => console.log(err));
 
-/* 
-Upcoming tasks
-1. apis - create new post; request feed by category ; store user's settings preference (i.e. moderator's list, categories, threshold)
-2. store common moderator list & category list
-*/
+/**
+ * Every input of address should be converted to lowercase
+ * Every query related to address should be assumed lowercase
+ */

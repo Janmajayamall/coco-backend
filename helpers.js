@@ -12,7 +12,11 @@ async function strToHash(str) {
 function marketIdentifierFrom(creatorAddress, eventIdentifier, oracleAddress) {
 	const encoding = web3.eth.abi.encodeParameters(
 		["address", "bytes32", "address"],
-		[creatorAddress, eventIdentifier, oracleAddress]
+		[
+			toCheckSumAddress(creatorAddress),
+			eventIdentifier,
+			toCheckSumAddress(oracleAddress),
+		]
 	);
 	return keccak256(encoding);
 }
@@ -58,7 +62,7 @@ async function getOracleAddress(txHash) {
 		}
 
 		const oracleAddress = receipt.logs[0].topics[1];
-		return web3.utils.toChecksumAddress(`0x${oracleAddress.slice(26)}`);
+		return `0x${oracleAddress.slice(26)}`.toLowerCase();
 	} catch (e) {
 		console.log(`Error - ${e}`);
 		return;
@@ -77,7 +81,7 @@ async function getManagerAddress(oracleAddress) {
 			throw new Error("Manager does not exist");
 		}
 
-		return web3.utils.toChecksumAddress(manager);
+		return manager.toLowerCase();
 	} catch (e) {
 		console.log(`Error - ${e}`);
 		return;
@@ -181,3 +185,7 @@ module.exports = {
 	marketIdentifierFrom,
 	toCheckSumAddress,
 };
+
+/**
+ * S3 bucket
+ */

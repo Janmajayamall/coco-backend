@@ -8,13 +8,16 @@ const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
 
 router.post("/login", async function (req, res, next) {
-	var { hotAddress, keySignature, accountNonce } = req.body;
-	hotAddress = toCheckSumAddress(hotAddress);
+	let { hotAddress, keySignature, accountNonce } = req.body;
+	hotAddress = hotAddress.toLowerCase();
 
-	var coldAddress = verifySignature(
-		`Sign your hot wallet with address ${hotAddress} and nonce ${accountNonce} to login Mimi`,
+	let coldAddress = verifySignature(
+		`Sign your hot wallet with address ${toCheckSumAddress(
+			hotAddress
+		)} and nonce ${accountNonce} to login Mimi`,
 		keySignature
 	);
+	coldAddress = coldAddress.toLowerCase();
 
 	var user = await models.User.findUserByFilter({ coldAddress });
 
@@ -69,8 +72,7 @@ router.post("/profile", authenticate, async function (req, res) {
 });
 
 router.post("/accountNonce", async function (req, res, next) {
-	var { coldAddress } = req.body;
-	coldAddress = toCheckSumAddress(coldAddress);
+	let { coldAddress } = req.body;
 
 	const user = await models.User.findUserByFilter({ coldAddress });
 	var accountNonce = -1;

@@ -1,12 +1,5 @@
 const router = require("express").Router();
-const {
-	getOracleMarketParams,
-	checkAddress,
-	getOracleDelegate,
-	getOracleAddress,
-	getManagerAddress,
-	toCheckSumAddress,
-} = require("./../helpers");
+const { getManagerAddress } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
 
@@ -53,22 +46,13 @@ router.post("/popular", async function (req, res) {
 });
 
 /**
- * Returns details of moderators present present in moderatorIds
+ * Returns details of moderators present in moderatorIds
  * details include - name, address, postCount, followCount
  */
 router.post("/findDetails", async function (req, res, next) {
 	let { moderatorIds } = req.body;
 	if (!Array.isArray(moderatorIds)) {
 		next("moderatorIds should be a array");
-		return;
-	}
-
-	// toCheckSum every address
-	console.log(moderatorIds, " check summed moderator ids");
-	try {
-		moderatorIds = moderatorIds.map((id) => toCheckSumAddress(id));
-	} catch (e) {
-		next("Invalid address");
 		return;
 	}
 
@@ -88,7 +72,7 @@ router.post("/findDetails", async function (req, res, next) {
 					$count: "postCount",
 				},
 			]);
-			console.log(res, " post count");
+
 			const postCount = res.length > 0 ? res[0].postCount : 0;
 
 			// find follower count
@@ -110,7 +94,7 @@ router.post("/findDetails", async function (req, res, next) {
 			});
 		}
 	}
-	console.log(detailsArr, " array returned");
+
 	res.status(200).send({
 		success: true,
 		response: {
@@ -125,7 +109,6 @@ router.post("/findDetails", async function (req, res, next) {
  */
 router.post("/find", async function (req, res) {
 	const { filter } = req.body;
-	console.log(filter, " filter is here");
 	const moderators = await models.Moderator.findByFilter(filter);
 	res.status(200).send({
 		success: true,
@@ -134,12 +117,15 @@ router.post("/find", async function (req, res) {
 });
 
 router.post("/update", [authenticate], async function (req, res, next) {
-	var { oracleAddress, details } = req.body;
-	oracleAddress = toCheckSumAddress(oracleAddress);
+	let { oracleAddress, details } = req.body;
+	oracleAddress = oracleAddress.toLowerCase();
 
 	// check caller is manager
-	const managerAddress = await getManagerAddress(oracleAddress);
-
+	let managerAddress = await getManagerAddress(oracleAddress);
+	managerAddress =
+		managerAddress != undefined
+			? managerAddress.toLowerCase()
+			: managerAddress;
 	if (!managerAddress || managerAddress != req.user.coldAddress) {
 		next("Invalid manager");
 		return;

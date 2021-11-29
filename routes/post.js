@@ -8,6 +8,18 @@ const {
 } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
+const { s3GenerateUploadURL } = require("./../utils");
+
+router.post("/upload", [authenticate], async function (req, res, next) {
+	const user = req.user;
+	const presignedUrl = await s3GenerateUploadURL(user.coldAddress);
+	res.status(200).send({
+		success: true,
+		response: {
+			presignedUrl,
+		},
+	});
+});
 
 router.post("/new", [authenticate], async function (req, res, next) {
 	const user = req.user;
@@ -16,8 +28,8 @@ router.post("/new", [authenticate], async function (req, res, next) {
 		return;
 	}
 
-	var { oracleAddress, eventIdentifierStr } = req.body;
-	oracleAddress = toCheckSumAddress(oracleAddress);
+	let { oracleAddress, eventIdentifierStr } = req.body;
+	oracleAddress = oracleAddress.toLowerCase();
 
 	const marketExists = await checkMarketExistsInOracle(
 		user.coldAddress,
@@ -25,7 +37,7 @@ router.post("/new", [authenticate], async function (req, res, next) {
 		keccak256(eventIdentifierStr)
 	);
 
-	if (!marketExists) {
+	if (marketExists == false) {
 		next("Market does not exists");
 		return;
 	}
@@ -59,49 +71,6 @@ router.post("/find", async function (req, res) {
 		success: true,
 		response: {
 			posts: posts,
-		},
-	});
-});
-
-router.post("/newPostTrial", [authenticate], async function (req, res, next) {
-	const user = req.user;
-	if (!user) {
-		next("User not present");
-		return;
-	}
-
-	var { oracleAddress, eventIdentifierStr } = req.body;
-	oracleAddress = toCheckSumAddress(oracleAddress);
-
-	const marketExists = await checkMarketExistsInOracle(
-		user.coldAddress,
-		oracleAddress,
-		eventIdentifierStr
-	);
-
-	if (!marketExists) {
-		next("Market does not exists");
-		return;
-	}
-
-	const post = await models.Post.findPostAndUpdate(
-		{
-			creatorColdAddress: user.coldAddress,
-			oracleAddress,
-			eventIdentifierStr,
-			marketIdentifier: marketIdentifierFrom(
-				user.coldAddress,
-				eventIdentifierStr,
-				oracleAddress
-			),
-		},
-		{}
-	);
-
-	res.status(200).send({
-		success: true,
-		response: {
-			post,
 		},
 	});
 });
