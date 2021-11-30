@@ -8,6 +8,12 @@ const ModeratorSchema = new mongoose.Schema({
 	name: {
 		type: String,
 	},
+	refImage: {
+		type: String,
+	},
+	description: {
+		type: String,
+	},
 });
 
 ModeratorSchema.statics.findByFilter = function (filter) {

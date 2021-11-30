@@ -6,7 +6,7 @@ async function authenticate(req, res, next) {
 	const msg = req.body.msg;
 	const keySignature = signInfo.keySignature;
 	const msgSignature = signInfo.msgSignature;
-
+	console.log(signInfo, msg);
 	// get hot key of user
 	let hotAddress = verifySignature(JSON.stringify(msg), msgSignature);
 	hotAddress = hotAddress.toLowerCase();

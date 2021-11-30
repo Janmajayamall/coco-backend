@@ -16,6 +16,7 @@ function marketIdentifierFrom(creatorAddress, eventIdentifier, oracleAddress) {
 			toCheckSumAddress(creatorAddress),
 			eventIdentifier,
 			toCheckSumAddress(oracleAddress),
+			
 		]
 	);
 	return keccak256(encoding);

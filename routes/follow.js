@@ -46,6 +46,9 @@ router.post("/add", [authenticate], async function (req, res, next) {
 
 	res.status(200).send({
 		success: true,
+		response: {
+			moderatorAddress,
+		},
 	});
 });
 
@@ -57,7 +60,7 @@ router.post("/remove", [authenticate], async function (req, res, next) {
 	}
 
 	var { moderatorAddress } = req.body;
-	
+
 	// remove follow
 	await models.Follow.deleteFollowRelation(
 		user.coldAddress,
@@ -66,6 +69,9 @@ router.post("/remove", [authenticate], async function (req, res, next) {
 
 	res.status(200).send({
 		success: true,
+		response: {
+			moderatorAddress,
+		},
 	});
 });
 
