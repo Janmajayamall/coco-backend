@@ -61,7 +61,7 @@ router.post("/findDetails", async function (req, res, next) {
 	for (let i = 0; i < moderatorIds.length; i++) {
 		const id = moderatorIds[i];
 		const moderator = await models.Moderator.findOne({ oracleAddress: id });
-		console.log(moderator);
+
 		if (moderator) {
 			// find post count
 			let res = await models.Post.aggregate([
@@ -84,7 +84,7 @@ router.post("/findDetails", async function (req, res, next) {
 					$count: "followCount",
 				},
 			]);
-			console.log(res, " follow count");
+
 			const followCount = res.length > 0 ? res[0].followCount : 0;
 
 			detailsArr.push({
