@@ -5,10 +5,12 @@ var cors = require("cors");
 const { models } = require("./models");
 const routes = require("./routes");
 const Web3 = require("web3");
-const web3 = new Web3("https://rinkeby.arbitrum.io/rpc");
 
 require("dotenv").config({ path: __dirname + "/.env" });
 const port = 5000;
+
+let intervalObj;
+let rinkebyLatestBlockNumber = 0;
 
 var app = express();
 app.use(cors());
@@ -19,15 +21,39 @@ app.use("/user", routes.user);
 app.use("/post", routes.post);
 app.use("/moderator", routes.moderator);
 app.use("/follow", routes.follow);
+app.get("/latestBlockNumber", async function (req, res) {
+	res.send({
+		success: true,
+		response: {
+			rinkebyLatestBlockNumber,
+		},
+	});
+});
 
 async function main() {
 	await connectDb();
+
+	// keeping track of latest block number
+	let web3Rinkeby = new Web3(
+		"https://eth-rinkeby.alchemyapi.io/v2/KWlaJDgZmnjXPfP8Q205zvgD8RDI7bDe"
+	);
+	rinkebyLatestBlockNumber = await web3Rinkeby.eth.getBlockNumber();
+	intervalObj = setInterval(async () => {
+		try {
+			rinkebyLatestBlockNumber = await web3Rinkeby.eth.getBlockNumber();
+		} catch (e) {
+			console.log(e);
+		}
+	}, 60000);
+
 	app.listen(port, () => {
 		console.log(`Listening at http://localhost:${port}`);
 	});
 }
 
-main().catch((err) => console.log(err));
+main().catch((err) => {
+	clearInterval(intervalObj);
+});
 
 /**
  * Every input of address should be converted to lowercase
