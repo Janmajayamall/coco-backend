@@ -7,7 +7,7 @@ const routes = require("./routes");
 const Web3 = require("web3");
 
 require("dotenv").config({ path: __dirname + "/.env" });
-const port = 5000;
+const port = process.env.PORT || 5000;
 
 let intervalObj;
 let rinkebyLatestBlockNumber = 0;
