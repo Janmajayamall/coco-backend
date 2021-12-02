@@ -34,9 +34,7 @@ async function main() {
 	await connectDb();
 
 	// keeping track of latest block number
-	let web3Rinkeby = new Web3(
-		"https://eth-rinkeby.alchemyapi.io/v2/KWlaJDgZmnjXPfP8Q205zvgD8RDI7bDe"
-	);
+	let web3Rinkeby = new Web3(process.env.ALCHEMY_API);
 	rinkebyLatestBlockNumber = await web3Rinkeby.eth.getBlockNumber();
 	intervalObj = setInterval(async () => {
 		try {
