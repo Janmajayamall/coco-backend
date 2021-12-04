@@ -52,8 +52,3 @@ async function main() {
 main().catch((err) => {
 	clearInterval(intervalObj);
 });
-
-/**
- * Every input of address should be converted to lowercase
- * Every query related to address should be assumed lowercase
- */

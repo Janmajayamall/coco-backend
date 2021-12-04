@@ -45,6 +45,16 @@ router.post("/popular", async function (req, res) {
 	});
 });
 
+router.post("/all", async function (req, res) {
+	const moderators = await models.Moderator.findByFilter({});
+	res.status(200).send({
+		success: true,
+		response: {
+			moderators,
+		},
+	});
+});
+
 /**
  * Returns details of moderators present in moderatorIds
  * details include - name, address, postCount, followCount
