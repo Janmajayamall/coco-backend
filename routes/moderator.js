@@ -2,6 +2,7 @@ const router = require("express").Router();
 const { getManagerAddress } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
+const { MAX_LENGTH_NAME, MAX_LENGTH_DESCRIPTION } = require("./../utils");
 
 /* 
 Get Routes
@@ -139,6 +140,27 @@ router.post("/update", [authenticate], async function (req, res, next) {
 	if (!managerAddress || managerAddress != req.user.coldAddress) {
 		next("Invalid manager");
 		return;
+	}
+
+	// check details are valid
+	if (details.name) {
+		if (
+			typeof details.name !== "string" ||
+			details.name.length > MAX_LENGTH_NAME ||
+			details.name.split(" ").length !== 1
+		) {
+			next("Invalid name value!");
+			return;
+		}
+	}
+	if (details.description) {
+		if (
+			typeof details.description !== "string" ||
+			details.description.length > MAX_LENGTH_DESCRIPTION
+		) {
+			next("Invalid description value!");
+			return;
+		}
 	}
 
 	const moderator = await models.Moderator.findModeratorAndUpdate(
