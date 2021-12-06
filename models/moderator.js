@@ -8,7 +8,7 @@ const ModeratorSchema = new mongoose.Schema({
 	name: {
 		type: String,
 	},
-	refImage: {
+	groupImageUrl: {
 		type: String,
 	},
 	description: {
