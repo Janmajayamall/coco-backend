@@ -2,7 +2,11 @@ const router = require("express").Router();
 const { getManagerAddress } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
-const { MAX_LENGTH_NAME, MAX_LENGTH_DESCRIPTION } = require("./../utils");
+const {
+	MAX_LENGTH_NAME,
+	MAX_LENGTH_DESCRIPTION,
+	NAME_REGEX,
+} = require("./../utils");
 
 /* 
 Get Routes
@@ -146,8 +150,8 @@ router.post("/update", [authenticate], async function (req, res, next) {
 	if (details.name) {
 		if (
 			typeof details.name !== "string" ||
-			details.name.length > MAX_LENGTH_NAME ||
-			details.name.split(" ").length !== 1
+			NAME_REGEX.test(details.name) ||
+			details.name.length > MAX_LENGTH_NAME
 		) {
 			next("Invalid name value!");
 			return;

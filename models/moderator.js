@@ -8,9 +8,7 @@ const ModeratorSchema = new mongoose.Schema({
 	name: {
 		type: String,
 	},
-	groupImageUrl: {
-		type: String,
-	},
+
 	description: {
 		type: String,
 	},
