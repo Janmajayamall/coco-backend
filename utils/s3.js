@@ -4,8 +4,8 @@ const crypto = require("crypto");
 /**
  * s3 bucket config
  */
-const region = "ap-southeast-1";
-const bucketName = "meme-curation";
+const region = "eu-central-1";
+const bucketName = "pm-media-storage";
 const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
 const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
 const s3 = new aws.S3({

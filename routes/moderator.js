@@ -120,7 +120,7 @@ router.post("/findDetails", async function (req, res, next) {
 
 /**
  * Find moderatos using a filter
- * @notice addresses stored in db are check
+ * @notice addresses stored in db are in lowercase
  */
 router.post("/find", async function (req, res) {
 	const { filter } = req.body;

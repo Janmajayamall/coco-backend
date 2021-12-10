@@ -7,7 +7,7 @@ const routes = require("./routes");
 const Web3 = require("web3");
 
 require("dotenv").config({ path: __dirname + "/.env" });
-const port = process.env.PORT || 5000;
+const port = process.env.PORT || 8080;
 
 let intervalObj;
 let rinkebyLatestBlockNumber = 0;
@@ -40,7 +40,7 @@ async function main() {
 		try {
 			rinkebyLatestBlockNumber = await web3Rinkeby.eth.getBlockNumber();
 		} catch (e) {
-			console.log(e);
+			console.log("Unable to get latest block number");
 		}
 	}, 60000);
 
