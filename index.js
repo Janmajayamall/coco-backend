@@ -31,7 +31,11 @@ app.get("/latestBlockNumber", async function (req, res) {
 });
 
 async function main() {
-	await connectDb();
+	try {
+		await connectDb();
+	} catch (e) {
+		console.log(e, " this");
+	}
 
 	// keeping track of latest block number
 	let web3Rinkeby = new Web3(process.env.ALCHEMY_API);

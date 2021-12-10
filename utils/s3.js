@@ -6,8 +6,8 @@ const crypto = require("crypto");
  */
 const region = "eu-central-1";
 const bucketName = "pm-media-storage";
-const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+const accessKeyId = process.env.AWS_S3_ACCESS_KEY_ID;
+const secretAccessKey = process.env.AWS_S3_SECRET_ACCESS_KEY;
 const s3 = new aws.S3({
 	region,
 	accessKeyId,
