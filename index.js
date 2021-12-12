@@ -1,12 +1,11 @@
+require("dotenv").config({ path: __dirname + "/.env" });
 var express = require("express");
 const { connectDb } = require("./models");
 const { urlencoded, json } = require("body-parser");
 var cors = require("cors");
-const { models } = require("./models");
 const routes = require("./routes");
 const Web3 = require("web3");
 
-require("dotenv").config({ path: __dirname + "/.env" });
 const port = process.env.PORT || 8080;
 
 let intervalObj;
@@ -34,7 +33,7 @@ async function main() {
 	try {
 		await connectDb();
 	} catch (e) {
-		console.log(e, " this");
+		console.log(e, " Unable to connect to db");
 	}
 
 	// keeping track of latest block number

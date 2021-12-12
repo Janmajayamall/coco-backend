@@ -147,7 +147,7 @@ router.post("/update", [authenticate], async function (req, res, next) {
 	}
 
 	// check details are valid
-	if (details.name) {
+	if (details.name != undefined) {
 		if (
 			typeof details.name !== "string" ||
 			NAME_REGEX.test(details.name) ||
@@ -156,8 +156,24 @@ router.post("/update", [authenticate], async function (req, res, next) {
 			next("Invalid name value!");
 			return;
 		}
+
+		// check name uniqueness
+		const unique = await models.Moderator.checkNameUniqueness(
+			details.name.trim().toLowerCase(),
+			oracleAddress
+		);
+		if (!unique) {
+			next("Name already taken!");
+			return;
+		}
+
+		details = {
+			...details,
+			name: details.name.trim(),
+			nameUniqueness: details.name.trim().toLowerCase(),
+		};
 	}
-	if (details.description) {
+	if (details.description != undefined) {
 		if (
 			typeof details.description !== "string" ||
 			details.description.length > MAX_LENGTH_DESCRIPTION
@@ -176,9 +192,33 @@ router.post("/update", [authenticate], async function (req, res, next) {
 		}
 	);
 
+	// update follow
+	await models.Follow.updateFollowRelation(
+		req.user.coldAddress,
+		oracleAddress
+	);
+
 	res.status(200).send({
 		success: true,
 		response: { moderator },
+	});
+});
+
+router.post("/checkNameUniqueness", async function (req, res, next) {
+	let { name, oracleAddress } = req.body;
+	if (oracleAddress == undefined) {
+		oracleAddress = "";
+	}
+	// check name uniqueness
+	const unique = await models.Moderator.checkNameUniqueness(
+		name.trim().toLowerCase(),
+		oracleAddress.trim().toLowerCase()
+	);
+	res.status(200).send({
+		success: true,
+		response: {
+			isNameUnique: unique,
+		},
 	});
 });
 

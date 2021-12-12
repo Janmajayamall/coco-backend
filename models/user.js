@@ -18,10 +18,6 @@ const UserSchema = new mongoose.Schema({
 		type: Number,
 		required: true,
 	},
-	moderators: {
-		type: [String],
-		default: [],
-	},
 	threshold: {
 		type: Number,
 		default: 0.5,

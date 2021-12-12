@@ -3,12 +3,8 @@ const User = require("./user");
 const Post = require("./post");
 const Moderator = require("./moderator");
 const Follow = require("./follow");
-const fs = require("fs");
 const path = require("path");
-var ca = [
-	fs.readFileSync(path.resolve(`${__dirname}/../rds-combined-ca-bundle.pem`)),
-];
-console.log(__dirname);
+
 const connectDb = () => {
 	let options = {};
 	if (process.env.NODE_ENV === "production") {
