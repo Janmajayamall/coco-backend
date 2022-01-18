@@ -14,6 +14,7 @@ const ModeratorSchema = new mongoose.Schema({
 	nameUniqueness: {
 		type: String,
 	},
+	
 });
 
 ModeratorSchema.statics.findByFilter = function (filter) {
