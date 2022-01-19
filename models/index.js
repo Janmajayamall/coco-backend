@@ -3,6 +3,7 @@ const User = require("./user");
 const Post = require("./post");
 const Moderator = require("./moderator");
 const Follow = require("./follow");
+const TxRequest = require("./txRequests");
 const path = require("path");
 
 const connectDb = () => {

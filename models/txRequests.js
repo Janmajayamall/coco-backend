@@ -26,6 +26,10 @@ const TxRequestSchema = new mongoose.Schema(
 			type: Boolean,
 			required: true,
 		},
+		active: {
+			type: Boolean,
+			required: true,
+		},
 	},
 	{
 		timestamps: {},
@@ -34,6 +38,74 @@ const TxRequestSchema = new mongoose.Schema(
 
 TxRequestSchema.statics.findByFilter = function (filter) {
 	return this.find(filter);
+};
+
+TxRequestSchema.statics.findOneAndUpdate = function (filter, updates) {
+	return this.findOneAndUpdate(filter, updates, {
+		new: true,
+		upsert: true,
+	});
+};
+
+TxRequestSchema.statics.addSignature = function (
+	txCalldata,
+	oracleAddress,
+	signature
+) {
+	const req = await this.find({
+		txCalldata,
+		oracleAddress,
+	});
+	if (req == undefined || req.active == false) {
+		return;
+	}
+	return await this.findOneAndUpdate(
+		{
+			txCalldata,
+			oracleAddress,
+		},
+		{
+			...req,
+			signatures: [...req.signatures, signature],
+		},
+		{
+			new: true,
+		}
+	);
+};
+
+TxRequestSchema.statics.setActiveTo = function (
+	txCalldata,
+	oracleAddress,
+	isActive
+) {
+	return await this.findOneAndUpdate(
+		{
+			txCalldata,
+			oracleAddress,
+		},
+		{ active: isActive },
+		{
+			new: true,
+		}
+	);
+};
+
+TxRequestSchema.statics.setStatusTo = function (
+	txCalldata,
+	oracleAddress,
+	status
+) {
+	return await this.findOneAndUpdate(
+		{
+			txCalldata,
+			oracleAddress,
+		},
+		{ status },
+		{
+			new: true,
+		}
+	);
 };
 
 // TxRequestSchema.statics.updateFollowRelation = function (

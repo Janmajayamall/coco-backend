@@ -10,11 +10,6 @@ const router = require("express").Router();
 const { getManagerAddress, isGoverningGroupMember } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
-const {
-	MAX_LENGTH_NAME,
-	MAX_LENGTH_DESCRIPTION,
-	NAME_REGEX,
-} = require("./../utils");
 
 // used for creating new group tx request
 router.post("/newRequest", [authenticate], async function (req, res, next) {
@@ -40,6 +35,104 @@ router.post("/newRequest", [authenticate], async function (req, res, next) {
 	);
 
 	// add tx request to db
+	const txReq = await models.TxRequest.findOneAndUpdate(
+		{
+			txCalldata,
+			oracleAddress,
+		},
+		{
+			txCalldata,
+			txJsonStr,
+			relayedOnChain,
+			signatures: [signature],
+			oracleAddress,
+			status: readyToRelay,
+			active: true,
+		}
+	);
+
+	res.status(200).send({
+		success: true,
+		response: {
+			txRequest: txReq,
+		},
+	});
 });
 
-// used for adding your signatures to one of the tx requests
+// used for adding signatures to one of the tx requests
+router.post("/signRequest", [authenticate], async function (req, res, next) {
+	const user = req.user;
+	const { txCalldata, signature, oracleAddress } = req.body;
+
+	// Check user is a member of the group governing the oracle.
+	const isMember = await isGoverningGroupMember(
+		oracleAddress,
+		user.coldAddress
+	);
+	if (isMember == false) {
+		next("Invalid member");
+		return;
+	}
+
+	// add signature to tx req
+	let txReq = await models.TxRequest.addSignature(
+		txCalldata,
+		oracleAddress,
+		signature
+	);
+	if (txReq == undefined) {
+		next("Invalid tx request");
+		return;
+	}
+
+	// check whether tx request can be relayed
+	const readyToRelay = didReceivedEnoughSignatures(
+		txCalldata,
+		oracleAddress,
+		txReq.signatures
+	);
+
+	if (readyToRelay == true) {
+		// update status = true
+		txReq = await models.TxRequest.setStatusTo(
+			txCalldata,
+			oracleAddress,
+			true
+		);
+	}
+
+	res.status(200).send({
+		success: true,
+		response: {
+			txRequest: txReq,
+		},
+	});
+});
+
+// mark tx request as inactive
+router.post("/setInactive", [authenticate], async function (req, res, next) {
+	const user = req.user;
+	const { txCalldata, oracleAddress } = req.body;
+
+	// Check user is a member of the group governing the oracle.
+	const isMember = await isGoverningGroupMember(
+		oracleAddress,
+		user.coldAddress
+	);
+	if (isMember == false) {
+		next("Invalid member");
+		return;
+	}
+
+	let txReq = await models.TxRequest.setActiveTo(
+		txCalldata,
+		oracleAddress,
+		false
+	);
+	res.status(200).send({
+		success: true,
+		response: {
+			txRequest: txReq,
+		},
+	});
+});
