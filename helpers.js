@@ -1,8 +1,9 @@
 const Web3 = require("web3");
 const web3 = new Web3("https://rinkeby.arbitrum.io/rpc");
-const oracleContractJson = require("./abis/Oracle.json");
+const callerContractJson = require("./abis/Caller.json");
 
 const ORACLE_FACTORY_ADDRESS = "0x35858C861564F072724658458C1c9C22F5506c36";
+const CALLER_ADDRESS = "0x35858C861564F072724658458C1c9C22F5506c36";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 async function strToHash(str) {
@@ -34,18 +35,15 @@ async function checkMarketExistsInOracle(
 
 	try {
 		const contract = new web3.eth.Contract(
-			oracleContractJson,
-			oracleAddress
+			callerContractJson,
+			CALLER_ADDRESS
 		);
 
-		const creator = await contract.methods
-			.creators(marketIdentifier)
+		const exists = await contract.methods
+			.marketExistsInOracle(oracleAddress, marketIdentifier)
 			.call();
 
-		if (!creator || creator == ZERO_ADDRESS) {
-			throw new Error("Market does not exist");
-		}
-		return true;
+		return exists;
 	} catch (e) {
 		console.log(`Error - ${e}`);
 		return false;
@@ -72,11 +70,11 @@ async function getOracleAddress(txHash) {
 async function getManagerAddress(oracleAddress) {
 	try {
 		const contract = new web3.eth.Contract(
-			oracleContractJson,
-			oracleAddress
+			callerContractJson,
+			CALLER_ADDRESS
 		);
 
-		const manager = await contract.methods.manager().call();
+		const manager = await contract.methods.manager(oracleAddress).call();
 		if (!manager || manager == ZERO_ADDRESS) {
 			throw new Error("Manager does not exist");
 		}
@@ -85,6 +83,48 @@ async function getManagerAddress(oracleAddress) {
 	} catch (e) {
 		console.log(`Error - ${e}`);
 		return;
+	}
+}
+
+async function isGoverningGroupMember(oracleAddress, userAddress) {
+	try {
+		const contract = new web3.eth.Contract(
+			callerContractJson,
+			CALLER_ADDRESS
+		);
+
+		const check = await contract.methods
+			.isGoverningGroupMember(userAddress, oracleAddress)
+			.call();
+		return check;
+	} catch (e) {
+		console.log(`Error - ${e}`);
+		return false;
+	}
+}
+
+async function didReceivedEnoughSignatures(
+	txCalldata,
+	oracleAddress,
+	signaturesArr
+) {
+	try {
+		const contract = new web3.eth.Contract(
+			callerContractJson,
+			CALLER_ADDRESS
+		);
+
+		const check = await contract.methods
+			.didReceivedEnoughSignatures(
+				txCalldata,
+				signaturesBytesFromArr(signaturesArr),
+				oracleAddress
+			)
+			.call();
+		return check;
+	} catch (e) {
+		console.log(`Error - ${e}`);
+		return false;
 	}
 }
 
@@ -98,48 +138,6 @@ async function txInputFromTxHashForNewMarket(txHash) {
 			input
 		);
 		return input;
-	} catch (e) {
-		return undefined;
-	}
-}
-
-async function getOracleMarketParams(address) {
-	try {
-		const oracleContract = new web3.eth.Contract(
-			oracleContractJson,
-			address
-		);
-		const params = await oracleContract.methods.getMarketParams().call();
-
-		// check necessary values
-		if (
-			!checkAddress(params[0]) ||
-			typeof params[1] != "boolean" ||
-			typeof params[2] != "number" ||
-			typeof params[3] != "number" ||
-			params[2] > params[3] ||
-			typeof params[4] != "number" ||
-			typeof params[5] != "number" ||
-			typeof params[6] != "number" ||
-			typeof params[7] != "number"
-		) {
-			throw Error("Invalid oracle market params");
-		}
-
-		return params;
-	} catch (e) {
-		return undefined;
-	}
-}
-
-async function getOracleDelegate(address) {
-	try {
-		const oracleContract = new web3.eth.Contract(
-			oracleContractJson,
-			address
-		);
-		const delegate = await oracleContract.methods.getDelegate().call();
-		return delegate;
 	} catch (e) {
 		return undefined;
 	}
@@ -170,6 +168,14 @@ function toCheckSumAddress(address) {
 	return web3.utils.toChecksumAddress(address);
 }
 
+function signaturesBytesFromArr(signaturesArr) {
+	let signs = "0x";
+	signaturesArr.forEach((sign) => {
+		signs += sign.substr(2);
+	});
+	return web3.utils.hexToBytes(signs);
+}
+
 module.exports = {
 	txInputFromTxHashForNewMarket,
 	verifySignature,
@@ -184,6 +190,9 @@ module.exports = {
 	getManagerAddress,
 	marketIdentifierFrom,
 	toCheckSumAddress,
+	isGoverningGroupMember,
+	signaturesBytesFromArr,
+	didReceivedEnoughSignatures,
 };
 
 /**

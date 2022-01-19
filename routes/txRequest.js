@@ -7,7 +7,7 @@
  */
 
 const router = require("express").Router();
-const { getManagerAddress } = require("./../helpers");
+const { getManagerAddress, isGoverningGroupMember } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
 const {
@@ -19,20 +19,27 @@ const {
 // used for creating new group tx request
 router.post("/newRequest", [authenticate], async function (req, res, next) {
 	const user = req.user;
-	const { txCalldata, txJsonStr, relayedOnChain, signatures, oracleAddress } =
+	const { txCalldata, txJsonStr, relayedOnChain, signature, oracleAddress } =
 		req.body;
 
 	// Check user is a member of the group governing the oracle.
-	// I think this will require a chain of requests
-	// that first checks whether oracleAddress exists
-	// or not. Then retrieves gnosis multisig address (i.e. owner address).
-	// Then checks whether user is part of the multi sig
-	// wallet or not.
-
-	// add tx request to db
+	const isMember = await isGoverningGroupMember(
+		oracleAddress,
+		user.coldAddress
+	);
+	if (isMember == false) {
+		next("Invalid member");
+		return;
+	}
 
 	// check whether tx request can be relayed
-	// if then update status to true, otherwise false
+	const readyToRelay = didReceivedEnoughSignatures(
+		txCalldata,
+		oracleAddress,
+		[signature]
+	);
+
+	// add tx request to db
 });
 
 // used for adding your signatures to one of the tx requests
