@@ -10,8 +10,8 @@ const TxRequestSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		relayedOnChain: {
-			type: Boolean,
+		requestType: {
+			type: Number,
 			required: true,
 		},
 		signatures: {
@@ -22,7 +22,7 @@ const TxRequestSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		status: {
+		readyToRelay: {
 			type: Boolean,
 			required: true,
 		},
@@ -52,11 +52,11 @@ TxRequestSchema.statics.addSignature = function (
 	oracleAddress,
 	signature
 ) {
-	const req = await this.find({
+	const response = await this.find({
 		txCalldata,
 		oracleAddress,
 	});
-	if (req == undefined || req.active == false) {
+	if (response == undefined || response.active == false) {
 		return;
 	}
 	return await this.findOneAndUpdate(
@@ -65,8 +65,8 @@ TxRequestSchema.statics.addSignature = function (
 			oracleAddress,
 		},
 		{
-			...req,
-			signatures: [...req.signatures, signature],
+			...response,
+			signatures: [...response.signatures, signature],
 		},
 		{
 			new: true,
@@ -91,48 +91,21 @@ TxRequestSchema.statics.setActiveTo = function (
 	);
 };
 
-TxRequestSchema.statics.setStatusTo = function (
+TxRequestSchema.statics.setReadyToRelayTo = function (
 	txCalldata,
 	oracleAddress,
-	status
+	readyToRelay
 ) {
 	return await this.findOneAndUpdate(
 		{
 			txCalldata,
 			oracleAddress,
 		},
-		{ status },
+		{ readyToRelay },
 		{
 			new: true,
 		}
 	);
 };
-
-// TxRequestSchema.statics.updateFollowRelation = function (
-// 	userAddress,
-// 	moderatorAddress
-// ) {
-// 	return this.findOneAndUpdate(
-// 		{
-// 			userAddress,
-// 			moderatorAddress,
-// 		},
-// 		{},
-// 		{
-// 			new: true,
-// 			upsert: true,
-// 		}
-// 	);
-// };
-
-// FollowSchema.statics.deleteFollowRelation = function (
-// 	userAddress,
-// 	moderatorAddress
-// ) {
-// 	return this.deleteMany({
-// 		userAddress,
-// 		moderatorAddress,
-// 	});
-// };
 
 module.exports = mongoose.model("TxRequest", TxRequestSchema);

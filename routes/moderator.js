@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { getManagerAddress } = require("./../helpers");
+const { getManagerAddress, isGoverningGroupMember } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
 const {
@@ -135,14 +135,13 @@ router.post("/update", [authenticate], async function (req, res, next) {
 	let { oracleAddress, details } = req.body;
 	oracleAddress = oracleAddress.toLowerCase();
 
-	// check caller is manager
-	let managerAddress = await getManagerAddress(oracleAddress);
-	managerAddress =
-		managerAddress != undefined
-			? managerAddress.toLowerCase()
-			: managerAddress;
-	if (!managerAddress || managerAddress != req.user.coldAddress) {
-		next("Invalid manager");
+	// Check user is a member of the group governing the oracle.
+	const isMember = await isGoverningGroupMember(
+		oracleAddress,
+		user.coldAddress
+	);
+	if (isMember == false) {
+		next("Invalid member");
 		return;
 	}
 

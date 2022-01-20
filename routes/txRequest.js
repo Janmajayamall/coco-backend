@@ -7,14 +7,14 @@
  */
 
 const router = require("express").Router();
-const { getManagerAddress, isGoverningGroupMember } = require("./../helpers");
+const { isGoverningGroupMember } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
 
 // used for creating new group tx request
 router.post("/newRequest", [authenticate], async function (req, res, next) {
 	const user = req.user;
-	const { txCalldata, txJsonStr, relayedOnChain, signature, oracleAddress } =
+	const { txCalldata, txJsonStr, requestType, signature, oracleAddress } =
 		req.body;
 
 	// Check user is a member of the group governing the oracle.
@@ -43,10 +43,10 @@ router.post("/newRequest", [authenticate], async function (req, res, next) {
 		{
 			txCalldata,
 			txJsonStr,
-			relayedOnChain,
+			requestType,
 			signatures: [signature],
 			oracleAddress,
-			status: readyToRelay,
+			readyToRelay,
 			active: true,
 		}
 	);
@@ -94,7 +94,7 @@ router.post("/signRequest", [authenticate], async function (req, res, next) {
 
 	if (readyToRelay == true) {
 		// update status = true
-		txReq = await models.TxRequest.setStatusTo(
+		txReq = await models.TxRequest.setReadyToRelayTo(
 			txCalldata,
 			oracleAddress,
 			true
@@ -133,6 +133,17 @@ router.post("/setInactive", [authenticate], async function (req, res, next) {
 		success: true,
 		response: {
 			txRequest: txReq,
+		},
+	});
+});
+
+router.post("/find", async function (req, res) {
+	const { filter } = req.body;
+	const txRequests = await models.TxRequest.findByFilter(filter);
+	res.status(200).send({
+		success: true,
+		response: {
+			txRequests,
 		},
 	});
 });
