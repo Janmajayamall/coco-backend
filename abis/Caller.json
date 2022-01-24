@@ -1,0 +1,98 @@
+[
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "user",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "oracle",
+				"type": "address"
+			}
+		],
+		"name": "isGoverningGroupMember",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "oracle",
+				"type": "address"
+			},
+			{
+				"internalType": "bytes32",
+				"name": "marketIdentifier",
+				"type": "bytes32"
+			}
+		],
+		"name": "marketExistsInOracle",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "oracle",
+				"type": "address"
+			}
+		],
+		"name": "manager",
+		"outputs": [
+			{
+				"internalType": "address",
+				"name": "",
+				"type": "address"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes",
+				"name": "data",
+				"type": "bytes"
+			},
+			{
+				"internalType": "bytes",
+				"name": "signatures",
+				"type": "bytes"
+			},
+			{
+				"internalType": "address",
+				"name": "oracle",
+				"type": "address"
+			}
+		],
+		"name": "didReceivedEnoughSignatures",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+]

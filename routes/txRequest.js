@@ -1,21 +1,25 @@
 /**
  * types of request
- * 1. Change name - off chain
- * 2. Change description - on chain
- * 3. change parameters - on chain
- * 4. add / remove members - on chain
+ * 1. updateMarketConfig
+ * 2. updateCollateralToken
+ * 3. addOwnerWithThreshold
+ * 4. removeOwner
  */
 
 const router = require("express").Router();
-const { isGoverningGroupMember } = require("./../helpers");
+const {
+	isGoverningGroupMember,
+	verifySignature,
+	didReceivedEnoughSignatures,
+	keccak256,
+} = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
 
 // used for creating new group tx request
 router.post("/newRequest", [authenticate], async function (req, res, next) {
 	const user = req.user;
-	const { txCalldata, txJsonStr, requestType, signature, oracleAddress } =
-		req.body;
+	const { txCalldata, requestType, signature, oracleAddress } = req.body;
 
 	// Check user is a member of the group governing the oracle.
 	const isMember = await isGoverningGroupMember(
@@ -24,6 +28,16 @@ router.post("/newRequest", [authenticate], async function (req, res, next) {
 	);
 	if (isMember == false) {
 		next("Invalid member");
+		return;
+	}
+
+	// Check signature on txCalldataHash is valid
+	const expectedAccAddress = verifySignature(
+		keccak256(txCalldata),
+		signature
+	);
+	if (expectedAccAddress.toLowerCase() !== user.coldAddress.toLowerCase()) {
+		next("Invalid txCalldata signature");
 		return;
 	}
 
@@ -42,7 +56,6 @@ router.post("/newRequest", [authenticate], async function (req, res, next) {
 		},
 		{
 			txCalldata,
-			txJsonStr,
 			requestType,
 			signatures: [signature],
 			oracleAddress,
@@ -71,6 +84,14 @@ router.post("/signRequest", [authenticate], async function (req, res, next) {
 	);
 	if (isMember == false) {
 		next("Invalid member");
+		return;
+	}
+
+	// Check signature on txCalldata is valid
+	const expectedAccAddress = verifySignature(txCalldata, signature);
+	if (expectedAccAddress.toLowerCase() !== user.coldAddress.toLowerCase()) {
+		// signature isn't valid
+		next("Invalid txCalldata signature");
 		return;
 	}
 

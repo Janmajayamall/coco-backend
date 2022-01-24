@@ -6,10 +6,10 @@ const TxRequestSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		txJsonStr: {
-			type: String,
-			required: true,
-		},
+		// txJsonStr: {
+		// 	type: String,
+		// 	required: true,
+		// },
 		requestType: {
 			type: Number,
 			required: true,
@@ -47,7 +47,7 @@ TxRequestSchema.statics.findOneAndUpdate = function (filter, updates) {
 	});
 };
 
-TxRequestSchema.statics.addSignature = function (
+TxRequestSchema.statics.addSignature = async function (
 	txCalldata,
 	oracleAddress,
 	signature
@@ -59,7 +59,7 @@ TxRequestSchema.statics.addSignature = function (
 	if (response == undefined || response.active == false) {
 		return;
 	}
-	return await this.findOneAndUpdate(
+	return this.findOneAndUpdate(
 		{
 			txCalldata,
 			oracleAddress,
@@ -79,7 +79,7 @@ TxRequestSchema.statics.setActiveTo = function (
 	oracleAddress,
 	isActive
 ) {
-	return await this.findOneAndUpdate(
+	return this.findOneAndUpdate(
 		{
 			txCalldata,
 			oracleAddress,
@@ -96,7 +96,7 @@ TxRequestSchema.statics.setReadyToRelayTo = function (
 	oracleAddress,
 	readyToRelay
 ) {
-	return await this.findOneAndUpdate(
+	return this.findOneAndUpdate(
 		{
 			txCalldata,
 			oracleAddress,

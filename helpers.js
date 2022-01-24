@@ -180,10 +180,8 @@ module.exports = {
 	txInputFromTxHashForNewMarket,
 	verifySignature,
 	hashMsgForSignature,
-	getOracleMarketParams,
 	checkAddress,
 	keccak256,
-	getOracleDelegate,
 
 	checkMarketExistsInOracle,
 	getOracleAddress,

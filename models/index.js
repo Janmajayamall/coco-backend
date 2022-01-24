@@ -4,7 +4,6 @@ const Post = require("./post");
 const Moderator = require("./moderator");
 const Follow = require("./follow");
 const TxRequest = require("./txRequests");
-const path = require("path");
 
 const connectDb = () => {
 	let options = {};
@@ -18,7 +17,7 @@ const connectDb = () => {
 	return mongoose.connect(process.env.DB_URI, options);
 };
 
-const models = { User, Post, Moderator, Follow };
+const models = { User, Post, Moderator, Follow, TxRequest };
 
 module.exports = {
 	connectDb,
