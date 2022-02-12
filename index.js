@@ -18,7 +18,7 @@ app.use(json());
 
 app.use("/user", routes.user);
 app.use("/post", routes.post);
-app.use("/moderator", routes.moderator);
+app.use("/group", routes.group);
 app.use("/follow", routes.follow);
 app.get("/latestBlockNumber", async function (req, res) {
 	res.send({

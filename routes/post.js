@@ -28,30 +28,15 @@ router.post("/new", [authenticate], async function (req, res, next) {
 		return;
 	}
 
-	let { oracleAddress, eventIdentifierStr } = req.body;
-	oracleAddress = oracleAddress.toLowerCase();
-
-	const marketExists = await checkMarketExistsInOracle(
-		user.coldAddress,
-		oracleAddress,
-		keccak256(eventIdentifierStr)
-	);
-
-	if (marketExists == false) {
-		next("Market does not exists");
-		return;
-	}
+	let { groupAddress, marketIdentifier, body } = req.body;
+	groupAddress = groupAddress.toLowerCase();
 
 	const post = await models.Post.findPostAndUpdate(
 		{
+			marketIdentifier,
 			creatorColdAddress: user.coldAddress,
-			oracleAddress,
-			eventIdentifierStr,
-			marketIdentifier: marketIdentifierFrom(
-				user.coldAddress,
-				keccak256(eventIdentifierStr),
-				oracleAddress
-			),
+			groupAddress,
+			body,
 		},
 		{}
 	);

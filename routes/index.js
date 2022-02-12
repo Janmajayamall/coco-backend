@@ -1,11 +1,11 @@
 const user = require("./user");
 const post = require("./post");
-const moderator = require("./moderator");
+const group = require("./group");
 const follow = require("./follow");
 
 module.exports = {
 	user,
 	post,
-	moderator,
+	group,
 	follow,
 };

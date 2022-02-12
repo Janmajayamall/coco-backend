@@ -1,12 +1,12 @@
 const router = require("express").Router();
-const { getManagerAddress } = require("./../helpers");
-const { models } = require("./../models/index");
+const { getManagerAddress } = require("../helpers");
+const { models } = require("../models/index");
 const { authenticate } = require("./middlewares");
 const {
 	MAX_LENGTH_NAME,
 	MAX_LENGTH_DESCRIPTION,
 	NAME_REGEX,
-} = require("./../utils");
+} = require("../utils");
 
 /* 
 Get Routes
@@ -26,62 +26,62 @@ router.post("/popular", async function (req, res) {
 		next("ignoreList should be array");
 		return;
 	}
-	const oracleAddresses = await models.Post.aggregate([
+	const groupAddresses = await models.Post.aggregate([
 		{
-			$match: { oracleAddress: { $nin: ignoreList } },
+			$match: { groupAddress: { $nin: ignoreList } },
 		},
 		{
-			$group: { _id: "$oracleAddress", count: { $sum: 1 } },
+			$group: { _id: "$groupAddress", count: { $sum: 1 } },
 		},
 		{ $sort: { count: -1 } },
 		{
 			$limit: 20,
 		},
 	]);
-	const moderators = await models.Moderator.findByFilter({
-		oracleAddress: {
-			$in: oracleAddresses,
+	const groups = await models.Group.findByFilter({
+		groupAddress: {
+			$in: groupAddresses,
 		},
 	});
 
 	res.status(200).send({
 		success: true,
-		response: { moderators },
+		response: { groups },
 	});
 });
 
 router.post("/all", async function (req, res) {
-	const moderators = await models.Moderator.findByFilter({});
+	const groups = await models.Group.findByFilter({});
 	res.status(200).send({
 		success: true,
 		response: {
-			moderators,
+			groups,
 		},
 	});
 });
 
 /**
- * Returns details of moderators present in moderatorIds
+ * Returns details of groups present in groupIds
  * details include - name, address, postCount, followCount
  */
 router.post("/findDetails", async function (req, res, next) {
-	let { moderatorIds } = req.body;
-	if (!Array.isArray(moderatorIds)) {
-		next("moderatorIds should be a array");
+	let { groupIds } = req.body;
+	if (!Array.isArray(groupIds)) {
+		next("groupIds should be a array");
 		return;
 	}
 
 	// find details
 	let detailsArr = [];
-	for (let i = 0; i < moderatorIds.length; i++) {
-		const id = moderatorIds[i];
-		const moderator = await models.Moderator.findOne({ oracleAddress: id });
+	for (let i = 0; i < groupIds.length; i++) {
+		const id = groupIds[i];
+		const group = await models.Group.findOne({ groupAddress: id });
 
-		if (moderator) {
+		if (group) {
 			// find post count
 			let res = await models.Post.aggregate([
 				{
-					$match: { oracleAddress: moderator.oracleAddress },
+					$match: { groupAddress: group.groupAddress },
 				},
 				{
 					$count: "postCount",
@@ -93,7 +93,7 @@ router.post("/findDetails", async function (req, res, next) {
 			// find follower count
 			res = await models.Follow.aggregate([
 				{
-					$match: { moderatorAddress: moderator.oracleAddress },
+					$match: { groupAddress: group.groupAddress },
 				},
 				{
 					$count: "followCount",
@@ -103,7 +103,7 @@ router.post("/findDetails", async function (req, res, next) {
 			const followCount = res.length > 0 ? res[0].followCount : 0;
 
 			detailsArr.push({
-				...moderator._doc,
+				...group._doc,
 				postCount,
 				followCount,
 			});
@@ -119,24 +119,24 @@ router.post("/findDetails", async function (req, res, next) {
 });
 
 /**
- * Find moderatos using a filter
+ * Find groups using a filter
  * @notice addresses stored in db are in lowercase
  */
 router.post("/find", async function (req, res) {
 	const { filter } = req.body;
-	const moderators = await models.Moderator.findByFilter(filter);
+	const groups = await models.Group.findByFilter(filter);
 	res.status(200).send({
 		success: true,
-		response: { moderators },
+		response: { groups },
 	});
 });
 
 router.post("/update", [authenticate], async function (req, res, next) {
-	let { oracleAddress, details } = req.body;
-	oracleAddress = oracleAddress.toLowerCase();
+	let { groupAddress, details } = req.body;
+	groupAddress = groupAddress.toLowerCase();
 
 	// check caller is manager
-	let managerAddress = await getManagerAddress(oracleAddress);
+	let managerAddress = await getManagerAddress(groupAddress);
 	managerAddress =
 		managerAddress != undefined
 			? managerAddress.toLowerCase()
@@ -158,9 +158,9 @@ router.post("/update", [authenticate], async function (req, res, next) {
 		}
 
 		// check name uniqueness
-		const unique = await models.Moderator.checkNameUniqueness(
+		const unique = await models.group.checkNameUniqueness(
 			details.name.trim().toLowerCase(),
-			oracleAddress
+			groupAddress
 		);
 		if (!unique) {
 			next("Name already taken!");
@@ -183,9 +183,9 @@ router.post("/update", [authenticate], async function (req, res, next) {
 		}
 	}
 
-	const moderator = await models.Moderator.findModeratorAndUpdate(
+	const group = await models.Group.findGroupAndUpdate(
 		{
-			oracleAddress,
+			groupAddress,
 		},
 		{
 			...details,
@@ -195,24 +195,24 @@ router.post("/update", [authenticate], async function (req, res, next) {
 	// update follow
 	await models.Follow.updateFollowRelation(
 		req.user.coldAddress,
-		oracleAddress
+		groupAddress
 	);
 
 	res.status(200).send({
 		success: true,
-		response: { moderator },
+		response: { group },
 	});
 });
 
 router.post("/checkNameUniqueness", async function (req, res, next) {
-	let { name, oracleAddress } = req.body;
-	if (oracleAddress == undefined) {
-		oracleAddress = "";
+	let { name, groupAddress } = req.body;
+	if (groupAddress == undefined) {
+		groupAddress = "";
 	}
 	// check name uniqueness
-	const unique = await models.Moderator.checkNameUniqueness(
+	const unique = await models.group.checkNameUniqueness(
 		name.trim().toLowerCase(),
-		oracleAddress.trim().toLowerCase()
+		groupAddress.trim().toLowerCase()
 	);
 	res.status(200).send({
 		success: true,

@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const PostSchema = new mongoose.Schema(
 	{
-		eventIdentifierStr: {
+		marketIdentifier: {
 			type: String,
 			required: true,
 		},
@@ -10,11 +10,11 @@ const PostSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		oracleAddress: {
+		groupAddress: {
 			type: String,
 			required: true,
 		},
-		marketIdentifier: {
+		body: {
 			type: String,
 			required: true,
 		},
