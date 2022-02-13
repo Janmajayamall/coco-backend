@@ -14,13 +14,20 @@ router.post("/login", async function (req, res, next) {
 	let coldAddress = verifySignature(
 		`Sign your hot wallet with address ${toCheckSumAddress(
 			hotAddress
-		)} and nonce ${accountNonce} to login Mimi`,
+		)} and nonce ${accountNonce} to login COCO`,
 		keySignature
 	);
 	coldAddress = coldAddress.toLowerCase();
 
 	var user = await models.User.findUserByFilter({ coldAddress });
-
+	
+	console.log(
+		user,
+		coldAddress,
+		hotAddress,
+		accountNonce,
+		" this is here for login"
+	);
 	if (user == undefined || user.accountNonce < accountNonce) {
 		// update user values
 		user = await models.User.findUserAndUpdate(
@@ -28,7 +35,6 @@ router.post("/login", async function (req, res, next) {
 				coldAddress: coldAddress,
 			},
 			{
-				
 				hotAddress,
 				accountNonce,
 			}

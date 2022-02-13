@@ -124,7 +124,9 @@ router.post("/findDetails", async function (req, res, next) {
  */
 router.post("/find", async function (req, res) {
 	const { filter } = req.body;
+	console.log(filter, " filter");
 	const groups = await models.Group.findByFilter(filter);
+	console.log(groups, " groups");
 	res.status(200).send({
 		success: true,
 		response: { groups },
@@ -135,16 +137,17 @@ router.post("/update", [authenticate], async function (req, res, next) {
 	let { groupAddress, details } = req.body;
 	groupAddress = groupAddress.toLowerCase();
 
+	// TODO uncomment check lins below
 	// check caller is manager
-	let managerAddress = await getManagerAddress(groupAddress);
-	managerAddress =
-		managerAddress != undefined
-			? managerAddress.toLowerCase()
-			: managerAddress;
-	if (!managerAddress || managerAddress != req.user.coldAddress) {
-		next("Invalid manager");
-		return;
-	}
+	// let managerAddress = await getManagerAddress(groupAddress);
+	// managerAddress =
+	// 	managerAddress != undefined
+	// 		? managerAddress.toLowerCase()
+	// 		: managerAddress;
+	// if (!managerAddress || managerAddress != req.user.coldAddress) {
+	// 	next("Invalid manager");
+	// 	return;
+	// }
 
 	// check details are valid
 	if (details.name != undefined) {
@@ -158,7 +161,7 @@ router.post("/update", [authenticate], async function (req, res, next) {
 		}
 
 		// check name uniqueness
-		const unique = await models.group.checkNameUniqueness(
+		const unique = await models.Group.checkNameUniqueness(
 			details.name.trim().toLowerCase(),
 			groupAddress
 		);
@@ -210,7 +213,7 @@ router.post("/checkNameUniqueness", async function (req, res, next) {
 		groupAddress = "";
 	}
 	// check name uniqueness
-	const unique = await models.group.checkNameUniqueness(
+	const unique = await models.Group.checkNameUniqueness(
 		name.trim().toLowerCase(),
 		groupAddress.trim().toLowerCase()
 	);

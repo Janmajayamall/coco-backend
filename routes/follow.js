@@ -26,28 +26,25 @@ router.post("/add", [authenticate], async function (req, res, next) {
 		return;
 	}
 
-	var { moderatorAddress } = req.body;
-	moderatorAddress = moderatorAddress.toLowerCase();
+	var { groupAddress } = req.body;
+	groupAddress = groupAddress.toLowerCase();
 
-	const moderatorExists = await models.Moderator.findByFilter({
-		oracleAddress: moderatorAddress,
+	const groupExists = await models.Group.findByFilter({
+		groupAddress: groupAddress,
 	});
 
-	if (!moderatorExists || moderatorExists.length == 0) {
-		next("Moderator does not exists");
+	if (!groupExists || groupExists.length == 0) {
+		next("Group does not exists");
 		return;
 	}
 
 	// new follow
-	await models.Follow.updateFollowRelation(
-		user.coldAddress,
-		moderatorAddress
-	);
+	await models.Follow.updateFollowRelation(user.coldAddress, groupAddress);
 
 	res.status(200).send({
 		success: true,
 		response: {
-			moderatorAddress,
+			groupAddress,
 		},
 	});
 });
@@ -59,18 +56,15 @@ router.post("/remove", [authenticate], async function (req, res, next) {
 		return;
 	}
 
-	var { moderatorAddress } = req.body;
+	var { groupAddress } = req.body;
 
 	// remove follow
-	await models.Follow.deleteFollowRelation(
-		user.coldAddress,
-		moderatorAddress
-	);
+	await models.Follow.deleteFollowRelation(user.coldAddress, groupAddress);
 
 	res.status(200).send({
 		success: true,
 		response: {
-			moderatorAddress,
+			groupAddress,
 		},
 	});
 });

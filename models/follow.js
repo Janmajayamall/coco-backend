@@ -6,7 +6,7 @@ const FollowSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
-		moderatorAddress: {
+		groupAddress: {
 			type: String,
 			required: true,
 		},
@@ -22,12 +22,12 @@ FollowSchema.statics.findByFilter = function (filter) {
 
 FollowSchema.statics.updateFollowRelation = function (
 	userAddress,
-	moderatorAddress
+	groupAddress
 ) {
 	return this.findOneAndUpdate(
 		{
 			userAddress,
-			moderatorAddress,
+			groupAddress,
 		},
 		{},
 		{
@@ -39,11 +39,11 @@ FollowSchema.statics.updateFollowRelation = function (
 
 FollowSchema.statics.deleteFollowRelation = function (
 	userAddress,
-	moderatorAddress
+	groupAddress
 ) {
 	return this.deleteMany({
 		userAddress,
-		moderatorAddress,
+		groupAddress,
 	});
 };
 

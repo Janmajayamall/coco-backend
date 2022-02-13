@@ -34,6 +34,7 @@ GroupSchema.statics.checkNameUniqueness = async function (
 	const _check = await this.find({
 		nameUniqueness: name.trim().toLowerCase(),
 	});
+	console.log(_check, "NJNJ");
 	let unique = true;
 	if (
 		_check.length != 0 &&

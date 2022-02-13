@@ -28,7 +28,9 @@ router.post("/new", [authenticate], async function (req, res, next) {
 		return;
 	}
 
-	let { groupAddress, marketIdentifier, body } = req.body;
+	let { groupAddress, marketIdentifier, body, marketSignature, marketData } =
+		req.body;
+	console.log(groupAddress, marketIdentifier, body);
 	groupAddress = groupAddress.toLowerCase();
 
 	const post = await models.Post.findPostAndUpdate(
@@ -37,6 +39,8 @@ router.post("/new", [authenticate], async function (req, res, next) {
 			creatorColdAddress: user.coldAddress,
 			groupAddress,
 			body,
+			marketSignature,
+			marketData,
 		},
 		{}
 	);

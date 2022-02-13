@@ -18,6 +18,14 @@ const PostSchema = new mongoose.Schema(
 			type: String,
 			required: true,
 		},
+		marketSignature: {
+			type: String,
+			required: true,
+		},
+		marketData: {
+			type: String,
+			required: true,
+		},
 	},
 	{
 		timestamps: {},
