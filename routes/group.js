@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { getManagerAddress } = require("../helpers");
+const { getManagerAddress, checkUserOwnsSafeAddress } = require("../helpers");
 const { models } = require("../models/index");
 const { authenticate } = require("./middlewares");
 const {
@@ -137,17 +137,18 @@ router.post("/update", [authenticate], async function (req, res, next) {
 	let { groupAddress, details } = req.body;
 	groupAddress = groupAddress.toLowerCase();
 
-	// TODO uncomment check lins below
-	// check caller is manager
-	// let managerAddress = await getManagerAddress(groupAddress);
-	// managerAddress =
-	// 	managerAddress != undefined
-	// 		? managerAddress.toLowerCase()
-	// 		: managerAddress;
-	// if (!managerAddress || managerAddress != req.user.coldAddress) {
-	// 	next("Invalid manager");
-	// 	return;
-	// }
+	// get group's manager address
+	const managerAddress = await getManagerAddress(groupAddress);
+
+	// check user is an owner of manager safe (i.e. safe at manager address)
+	const isUserAnOwner = checkUserOwnsSafeAddress(
+		req.user.coldAddress,
+		managerAddress
+	);
+	if (isUserAnOwner == false) {
+		next("Not an owner!");
+		return;
+	}
 
 	// check details are valid
 	if (details.name != undefined) {

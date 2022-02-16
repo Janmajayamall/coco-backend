@@ -1,9 +1,13 @@
 const Web3 = require("web3");
 const web3 = new Web3("https://rinkeby.arbitrum.io/rpc");
-const oracleContractJson = require("./abis/Oracle.json");
-
+const groupContractJson = require("./abis/Group.json");
+const SafeServiceClient = require("@gnosis.pm/safe-service-client/dist/src/SafeServiceClient");
 const ORACLE_FACTORY_ADDRESS = "0x35858C861564F072724658458C1c9C22F5506c36";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+
+// safe configs
+const safeTransactionServiceUrl = "http://18.159.101.163:8000/txs";
+const safeService = new SafeServiceClient.default(safeTransactionServiceUrl);
 
 async function strToHash(str) {
 	return web3.utils.asciiToHex(str);
@@ -34,7 +38,7 @@ async function checkMarketExistsInOracle(
 
 	try {
 		const contract = new web3.eth.Contract(
-			oracleContractJson,
+			groupContractJson,
 			oracleAddress
 		);
 
@@ -69,14 +73,12 @@ async function getOracleAddress(txHash) {
 	}
 }
 
-async function getManagerAddress(oracleAddress) {
+async function getManagerAddress(groupAddress) {
 	try {
-		const contract = new web3.eth.Contract(
-			oracleContractJson,
-			oracleAddress
-		);
+		const contract = new web3.eth.Contract(groupContractJson, groupAddress);
 
 		const manager = await contract.methods.manager().call();
+		console.log(manager, " this is the manager address");
 		if (!manager || manager == ZERO_ADDRESS) {
 			throw new Error("Manager does not exist");
 		}
@@ -85,6 +87,24 @@ async function getManagerAddress(oracleAddress) {
 	} catch (e) {
 		console.log(`Error - ${e}`);
 		return;
+	}
+}
+
+// Wasn't able to find an API that directly
+// allows to query owners of an safe.
+// So to check whether a user owns a safe, this
+// function first queries all safe owned by user
+// and checkes whether the target safe address
+// exists in the list returned
+async function checkUserOwnsSafeAddress(userAddress, targetSafeAddress) {
+	try {
+		const safes = await safeService.getSafesByOwner(userAddress);
+		console.log(safes, " user safes");
+		return safes.find(
+			(add) => add.toLowerCase() == targetSafeAddress.toLowerCase()
+		);
+	} catch (e) {
+		return false;
 	}
 }
 
@@ -184,6 +204,7 @@ module.exports = {
 	getManagerAddress,
 	marketIdentifierFrom,
 	toCheckSumAddress,
+	checkUserOwnsSafeAddress,
 };
 
 /**

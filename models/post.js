@@ -33,7 +33,19 @@ const PostSchema = new mongoose.Schema(
 );
 
 PostSchema.statics.findPostsByFilter = function (filter) {
-	return this.find(filter);
+	return this.aggregate([
+		{
+			$match: filter,
+		},
+		{
+			$lookup: {
+				from: "groups",
+				localField: "groupAddress",
+				foreignField: "groupAddress",
+				as: "group",
+			},
+		},
+	]);
 };
 
 PostSchema.statics.findPostAndUpdate = function (filter, updates) {
