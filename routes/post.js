@@ -54,8 +54,47 @@ router.post("/new", [authenticate], async function (req, res, next) {
 });
 
 router.post("/find", async function (req, res) {
-	const { filter } = req.body;
-	const posts = await models.Post.findPostsByFilter(filter);
+	const { filter, sort } = req.body;
+
+	const posts = await models.Post.findPostsByFilter(filter, sort);
+	console.log(posts, " post request was made");
+	res.status(200).send({
+		success: true,
+		response: {
+			posts: posts,
+		},
+	});
+});
+
+router.post("/exploreFeed", async function (req, res) {
+	const posts = await models.Post.findPostsByFilter({}, { createdAt: -1 });
+	res.status(200).send({
+		success: true,
+		response: {
+			posts: posts,
+		},
+	});
+});
+
+router.post("/homeFeed", [authenticate], async function (req, res, next) {
+	if (!req.user) {
+		next("User not present");
+		return;
+	}
+
+	// find groups that user follows
+	const follows = await models.Follow.findByFilter({
+		userAddress: req.user.coldAddress,
+	});
+	const groupAddresses = follows.map((follow) => follow.groupAddress);
+	console.log(groupAddresses, " user follows these groups");
+	const posts = await models.Post.findPostsByFilter(
+		{
+			groupAddress: { $in: groupAddresses },
+		},
+		{ createdAt: -1 }
+	);
+	console.log(posts, " these are the posts");
 	res.status(200).send({
 		success: true,
 		response: {

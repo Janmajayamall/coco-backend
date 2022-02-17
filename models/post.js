@@ -32,10 +32,13 @@ const PostSchema = new mongoose.Schema(
 	}
 );
 
-PostSchema.statics.findPostsByFilter = function (filter) {
+PostSchema.statics.findPostsByFilter = function (filter, sort) {
 	return this.aggregate([
 		{
 			$match: filter,
+		},
+		{
+			$sort: sort,
 		},
 		{
 			$lookup: {
