@@ -6,9 +6,11 @@ const {
 } = require("./../helpers");
 const { models } = require("./../models/index");
 const { authenticate } = require("./middlewares");
+const { logger } = require("./../logger");
 
 router.post("/login", async function (req, res, next) {
 	let { hotAddress, keySignature, accountNonce } = req.body;
+
 	hotAddress = hotAddress.toLowerCase();
 
 	let coldAddress = verifySignature(
@@ -20,14 +22,7 @@ router.post("/login", async function (req, res, next) {
 	coldAddress = coldAddress.toLowerCase();
 
 	var user = await models.User.findUserByFilter({ coldAddress });
-	
-	console.log(
-		user,
-		coldAddress,
-		hotAddress,
-		accountNonce,
-		" this is here for login"
-	);
+
 	if (user == undefined || user.accountNonce < accountNonce) {
 		// update user values
 		user = await models.User.findUserAndUpdate(

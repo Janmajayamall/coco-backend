@@ -10,13 +10,11 @@ async function authenticate(req, res, next) {
 	// get hot key of user
 	let hotAddress = verifySignature(JSON.stringify(msg), msgSignature);
 	hotAddress = hotAddress.toLowerCase();
-	console.log(hotAddress);
+
 	// find user
 	var user = await models.User.findUserByFilter({
 		hotAddress: hotAddress,
 	});
-
-	console.log(user);
 
 	if (user == undefined) {
 		next("User does not exists!");

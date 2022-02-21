@@ -4,6 +4,7 @@ const groupContractJson = require("./abis/Group.json");
 const SafeServiceClient = require("@gnosis.pm/safe-service-client/dist/src/SafeServiceClient");
 const ORACLE_FACTORY_ADDRESS = "0x35858C861564F072724658458C1c9C22F5506c36";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+const { logger } = require("./logger");
 
 // safe configs
 const safeTransactionServiceUrl = "http://18.159.101.163:8000/txs";
@@ -47,11 +48,16 @@ async function checkMarketExistsInOracle(
 			.call();
 
 		if (!creator || creator == ZERO_ADDRESS) {
-			throw new Error("Market does not exist");
+			logger.info(
+				`[checkMarketExistsInOracle] marketIdentifier ${marketIdentifier} does not exists at oracle ${oracleAddress}`
+			);
+			throw new Error("Invalid market id");
 		}
 		return true;
 	} catch (e) {
-		console.log(`Error - ${e}`);
+		logger.error(
+			`[checkMarketExistsInOracle] marketIdentifier ${marketIdentifier} does not exists`
+		);
 		return false;
 	}
 }
@@ -62,13 +68,13 @@ async function getOracleAddress(txHash) {
 
 		// check to is OracleFactory
 		if (receipt.to != ORACLE_FACTORY_ADDRESS) {
-			throw new Error("Invalid tx");
+			throw new Error(`Invalid tx hash ${txHash}`);
 		}
 
 		const oracleAddress = receipt.logs[0].topics[1];
 		return `0x${oracleAddress.slice(26)}`.toLowerCase();
 	} catch (e) {
-		console.log(`Error - ${e}`);
+		logger.error(`[getOracleAddress] ${e}`);
 		return;
 	}
 }
@@ -78,20 +84,21 @@ async function getManagerAddress(groupAddress) {
 		const contract = new web3.eth.Contract(groupContractJson, groupAddress);
 
 		const manager = await contract.methods.manager().call();
-		console.log(manager, " this is the manager address");
 		if (!manager || manager == ZERO_ADDRESS) {
-			throw new Error("Manager does not exist");
+			throw new Error(
+				`Manager for group ${groupAddress} does not exists`
+			);
 		}
 
 		return manager.toLowerCase();
 	} catch (e) {
-		console.log(`Error - ${e}`);
+		logger.error(`[getManagerAddress] ${e}`);
 		return;
 	}
 }
 
 // Wasn't able to find an API that directly
-// allows to query owners of an safe.
+// allows to query owners of a safe.
 // So to check whether a user owns a safe, this
 // function first queries all safe owned by user
 // and checkes whether the target safe address
@@ -99,7 +106,6 @@ async function getManagerAddress(groupAddress) {
 async function checkUserOwnsSafeAddress(userAddress, targetSafeAddress) {
 	try {
 		const safes = await safeService.getSafesByOwner(userAddress);
-		console.log(safes, " user safes");
 		return safes.find(
 			(add) => add.toLowerCase() == targetSafeAddress.toLowerCase()
 		);

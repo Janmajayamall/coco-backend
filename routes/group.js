@@ -124,9 +124,7 @@ router.post("/findDetails", async function (req, res, next) {
  */
 router.post("/find", async function (req, res) {
 	const { filter } = req.body;
-	console.log(filter, " filter");
 	const groups = await models.Group.findByFilter(filter);
-	console.log(groups, " groups");
 	res.status(200).send({
 		success: true,
 		response: { groups },
