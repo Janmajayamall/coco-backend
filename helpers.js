@@ -7,8 +7,7 @@ const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 const { logger } = require("./logger");
 
 // safe configs
-const safeTransactionServiceUrl = "http://18.159.101.163:8000/txs";
-const safeService = new SafeServiceClient.default(safeTransactionServiceUrl);
+const safeService = new SafeServiceClient.default(process.env.SAFE_TXS_URL);
 
 async function strToHash(str) {
 	return web3.utils.asciiToHex(str);

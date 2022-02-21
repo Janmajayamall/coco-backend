@@ -21,7 +21,6 @@ const morganMiddleware = morgan(
 );
 
 let intervalObj;
-let rinkebyLatestBlockNumber = 0;
 
 var app = express();
 
@@ -34,14 +33,6 @@ app.use("/user", routes.user);
 app.use("/post", routes.post);
 app.use("/group", routes.group);
 app.use("/follow", routes.follow);
-app.get("/latestBlockNumber", async function (req, res) {
-	res.send({
-		success: true,
-		response: {
-			rinkebyLatestBlockNumber,
-		},
-	});
-});
 
 async function main() {
 	try {
@@ -49,17 +40,6 @@ async function main() {
 	} catch (e) {
 		logger.error(`[main] unable to connect to DB`);
 	}
-
-	// keeping track of latest block number
-	let web3Rinkeby = new Web3(process.env.ALCHEMY_API);
-	rinkebyLatestBlockNumber = await web3Rinkeby.eth.getBlockNumber();
-	intervalObj = setInterval(async () => {
-		try {
-			rinkebyLatestBlockNumber = await web3Rinkeby.eth.getBlockNumber();
-		} catch (e) {
-			logger.error(`[main] unable to get latest block number`);
-		}
-	}, 60000);
 
 	app.listen(port, () => {
 		logger.info(`Listening at http://localhost:${port}`);
