@@ -42,6 +42,7 @@ async function main() {
 	}
 
 	app.listen(port, () => {
+		logger.info(`Running in ${process.env.NODE_ENV} mode`);
 		logger.info(`Listening at http://localhost:${port}`);
 	});
 }
